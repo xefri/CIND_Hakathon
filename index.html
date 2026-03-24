@@ -4,148 +4,224 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AM Super-Agent Dashboard</title>
+<title>AM Super-Agent | CIND Hackathon 2026</title>
+<meta name="description" content="AI-powered Account Manager Super-Agent Dashboard - CIND Hackathon 2026">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
   :root {
-    --bg-primary: #0a0a1a;
-    --bg-secondary: #111128;
-    --bg-card: rgba(255,255,255,0.04);
-    --bg-card-hover: rgba(255,255,255,0.08);
-    --border: rgba(255,255,255,0.08);
-    --text-primary: #f0f0ff;
-    --text-secondary: #8888aa;
+    --bg-primary: #06060f;
+    --bg-secondary: #0c0c1d;
+    --bg-tertiary: #12122a;
+    --bg-card: rgba(255,255,255,0.03);
+    --bg-card-hover: rgba(255,255,255,0.06);
+    --border: rgba(255,255,255,0.06);
+    --border-hover: rgba(255,255,255,0.12);
+    --text-primary: #eeeef8;
+    --text-secondary: #7878a0;
+    --text-muted: #4a4a6a;
     --accent-purple: #8b5cf6;
     --accent-blue: #3b82f6;
+    --accent-cyan: #06b6d4;
     --accent-green: #10b981;
     --accent-orange: #f59e0b;
     --accent-red: #ef4444;
     --accent-pink: #ec4899;
-    --gradient-1: linear-gradient(135deg, #8b5cf6, #3b82f6);
-    --gradient-2: linear-gradient(135deg, #3b82f6, #10b981);
-    --gradient-3: linear-gradient(135deg, #f59e0b, #ef4444);
-    --glass: rgba(255,255,255,0.05);
-    --glass-border: rgba(255,255,255,0.1);
+    --gradient-hero: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 50%, #06b6d4 100%);
+    --gradient-warm: linear-gradient(135deg, #f59e0b, #ef4444);
+    --gradient-cool: linear-gradient(135deg, #3b82f6, #10b981);
+    --glass: rgba(255,255,255,0.04);
+    --glass-border: rgba(255,255,255,0.08);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 20px;
+    --shadow-card: 0 4px 24px rgba(0,0,0,0.2);
+    --shadow-glow: 0 0 40px rgba(139,92,246,0.08);
+    --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
+  html { scroll-behavior: smooth; }
+
   body {
-    font-family: 'Inter', -apple-system, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--bg-primary);
     color: var(--text-primary);
     min-height: 100vh;
     overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
   }
 
-  /* Ambient background */
-  body::before {
-    content: '';
+  /* Ambient background blobs */
+  .ambient {
     position: fixed;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background: radial-gradient(circle at 20% 50%, rgba(139,92,246,0.08) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(59,130,246,0.06) 0%, transparent 50%),
-                radial-gradient(circle at 50% 80%, rgba(16,185,129,0.05) 0%, transparent 50%);
-    animation: ambientMove 20s ease-in-out infinite;
+    inset: 0;
     z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
   }
-  @keyframes ambientMove {
-    0%, 100% { transform: translate(0, 0); }
-    50% { transform: translate(-2%, -1%); }
+  .ambient .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(120px);
+    opacity: 0.5;
+    animation: blobFloat 25s ease-in-out infinite;
+  }
+  .ambient .blob:nth-child(1) { width: 600px; height: 600px; background: rgba(139,92,246,0.07); top: -10%; left: 10%; }
+  .ambient .blob:nth-child(2) { width: 500px; height: 500px; background: rgba(59,130,246,0.05); top: 30%; right: -5%; animation-delay: -8s; }
+  .ambient .blob:nth-child(3) { width: 400px; height: 400px; background: rgba(6,182,212,0.04); bottom: -5%; left: 30%; animation-delay: -16s; }
+  @keyframes blobFloat {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(30px, -20px) scale(1.05); }
+    66% { transform: translate(-20px, 15px) scale(0.95); }
   }
 
   /* Layout */
   .app { display: flex; min-height: 100vh; position: relative; z-index: 1; }
 
-  /* Sidebar */
+  /* ===== Sidebar ===== */
   .sidebar {
     width: 260px;
     background: var(--bg-secondary);
     border-right: 1px solid var(--border);
-    padding: 24px 16px;
+    padding: 20px 14px;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 4px;
     position: fixed;
     height: 100vh;
     overflow-y: auto;
+    scrollbar-width: none;
+    z-index: 10;
   }
+  .sidebar::-webkit-scrollbar { display: none; }
 
   .logo {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 8px 12px;
-    margin-bottom: 24px;
+    padding: 12px;
+    margin-bottom: 20px;
   }
   .logo-icon {
-    width: 36px; height: 36px;
-    background: var(--gradient-1);
-    border-radius: 10px;
+    width: 40px; height: 40px;
+    background: var(--gradient-hero);
+    border-radius: var(--radius-md);
     display: flex; align-items: center; justify-content: center;
-    font-size: 18px;
+    font-size: 20px;
+    box-shadow: 0 4px 16px rgba(139,92,246,0.3);
   }
-  .logo-text { font-size: 16px; font-weight: 700; letter-spacing: -0.5px; }
-  .logo-badge {
-    font-size: 10px;
-    background: var(--accent-purple);
-    color: white;
+  .logo-text {
+    font-size: 15px; font-weight: 800; letter-spacing: -0.5px;
+    background: var(--gradient-hero);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .logo-version {
+    font-size: 9px;
+    background: rgba(139,92,246,0.2);
+    color: var(--accent-purple);
     padding: 2px 6px;
     border-radius: 4px;
-    font-weight: 600;
+    font-weight: 700;
+    letter-spacing: 0.5px;
   }
 
-  .nav-section { margin-top: 16px; }
-  .nav-section-title {
-    font-size: 10px;
+  .nav-section { margin-top: 12px; }
+  .nav-label {
+    font-size: 9px;
     text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--text-secondary);
+    letter-spacing: 2px;
+    color: var(--text-muted);
     padding: 0 12px;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
+    font-weight: 700;
   }
 
   .nav-item {
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 10px 12px;
-    border-radius: 8px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: var(--transition);
     font-size: 13px;
+    font-weight: 500;
     color: var(--text-secondary);
     position: relative;
+    user-select: none;
   }
-  .nav-item:hover { background: var(--bg-card-hover); color: var(--text-primary); }
-  .nav-item.active {
-    background: rgba(139,92,246,0.15);
+  .nav-item:hover {
+    background: rgba(255,255,255,0.04);
     color: var(--text-primary);
+  }
+  .nav-item.active {
+    background: rgba(139,92,246,0.12);
+    color: var(--text-primary);
+    font-weight: 600;
   }
   .nav-item.active::before {
     content: '';
     position: absolute;
     left: 0; top: 50%;
     transform: translateY(-50%);
-    width: 3px; height: 20px;
+    width: 3px; height: 18px;
     background: var(--accent-purple);
     border-radius: 0 3px 3px 0;
   }
-  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .nav-icon { font-size: 15px; width: 20px; text-align: center; flex-shrink: 0; }
   .nav-badge {
     margin-left: auto;
     font-size: 10px;
+    min-width: 18px;
+    height: 18px;
+    display: flex; align-items: center; justify-content: center;
     background: var(--accent-red);
     color: white;
-    padding: 1px 6px;
-    border-radius: 10px;
-    font-weight: 600;
+    border-radius: 9px;
+    font-weight: 700;
+    padding: 0 5px;
   }
 
-  /* Main content */
-  .main { flex: 1; margin-left: 260px; padding: 24px 32px; }
+  .mcp-status {
+    padding: 12px;
+    margin-top: auto;
+  }
+  .mcp-status-title {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--text-muted);
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+  .mcp-status-grid { display: flex; flex-wrap: wrap; gap: 6px; }
+  .mcp-dot {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+  .mcp-dot.sentral { background: rgba(139,92,246,0.15); color: #a78bfa; }
+  .mcp-dot.outlook { background: rgba(59,130,246,0.15); color: #60a5fa; }
+  .mcp-dot.knowledge { background: rgba(16,185,129,0.15); color: #34d399; }
+  .mcp-dot.semantic { background: rgba(236,72,153,0.15); color: #f472b6; }
+  .mcp-dot.coe { background: rgba(6,182,212,0.15); color: #22d3ee; }
+
+  /* ===== Main ===== */
+  .main {
+    flex: 1;
+    margin-left: 260px;
+    padding: 24px 32px 48px;
+    max-width: 1400px;
+  }
 
   /* Top bar */
   .topbar {
@@ -153,991 +229,810 @@
     align-items: center;
     justify-content: space-between;
     margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
   }
   .topbar-left h1 {
-    font-size: 22px;
-    font-weight: 700;
+    font-size: 24px;
+    font-weight: 800;
     letter-spacing: -0.5px;
+    line-height: 1.2;
   }
   .topbar-left p {
     font-size: 13px;
     color: var(--text-secondary);
     margin-top: 4px;
   }
-  .topbar-right { display: flex; align-items: center; gap: 12px; }
+  .topbar-right { display: flex; align-items: center; gap: 10px; }
 
-  .search-box {
+  .search-global {
     display: flex;
     align-items: center;
     gap: 8px;
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 8px 14px;
-    width: 280px;
-    transition: all 0.3s;
+    border-radius: var(--radius-md);
+    padding: 9px 14px;
+    width: 300px;
+    transition: var(--transition);
   }
-  .search-box:focus-within {
-    border-color: var(--accent-purple);
-    box-shadow: 0 0 0 3px rgba(139,92,246,0.1);
+  .search-global:focus-within {
+    border-color: rgba(139,92,246,0.4);
+    box-shadow: 0 0 0 3px rgba(139,92,246,0.08);
+    background: rgba(255,255,255,0.06);
   }
-  .search-box input {
-    background: transparent;
-    border: none;
-    color: var(--text-primary);
-    outline: none;
-    font-size: 13px;
-    width: 100%;
+  .search-global .icon { color: var(--text-muted); font-size: 14px; }
+  .search-global input {
+    background: transparent; border: none; color: var(--text-primary);
+    outline: none; font-size: 13px; width: 100%; font-family: inherit;
   }
-  .search-box input::placeholder { color: var(--text-secondary); }
+  .search-global input::placeholder { color: var(--text-muted); }
+  .search-global kbd {
+    font-size: 10px; color: var(--text-muted);
+    border: 1px solid var(--border); border-radius: 4px;
+    padding: 1px 5px; font-family: inherit; margin-left: auto;
+  }
 
-  .btn-icon {
-    width: 36px; height: 36px;
+  .topbar-btn {
+    width: 38px; height: 38px;
     background: var(--bg-card);
     border: 1px solid var(--border);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: var(--transition);
     color: var(--text-secondary);
     font-size: 16px;
+    position: relative;
   }
-  .btn-icon:hover { background: var(--bg-card-hover); color: var(--text-primary); }
-  .btn-icon.has-dot::after {
-    content: '';
-    position: absolute;
-    top: 6px; right: 6px;
+  .topbar-btn:hover { background: var(--bg-card-hover); color: var(--text-primary); border-color: var(--border-hover); }
+  .topbar-btn .dot {
+    position: absolute; top: 6px; right: 6px;
     width: 7px; height: 7px;
-    background: var(--accent-red);
-    border-radius: 50%;
+    background: var(--accent-red); border-radius: 50%;
     border: 2px solid var(--bg-primary);
   }
 
   .avatar {
-    width: 36px; height: 36px;
-    border-radius: 10px;
-    background: var(--gradient-1);
+    width: 38px; height: 38px;
+    border-radius: var(--radius-md);
+    background: var(--gradient-hero);
     display: flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 600;
+    font-size: 13px; font-weight: 700;
     cursor: pointer;
+    transition: var(--transition);
+    box-shadow: 0 2px 8px rgba(139,92,246,0.2);
   }
+  .avatar:hover { transform: scale(1.05); }
 
-  /* Cards grid */
+  /* ===== Grid system ===== */
   .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
-  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
   .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 24px; }
-  .grid-1-2 { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; margin-bottom: 24px; }
-  .grid-2-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-bottom: 24px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
+  .grid-2-1 { display: grid; grid-template-columns: 5fr 3fr; gap: 16px; margin-bottom: 24px; }
 
-  /* Glass card */
+  /* ===== Glass Card ===== */
   .card {
     background: var(--glass);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     padding: 20px;
-    transition: all 0.3s;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.02) 0%, transparent 50%);
+    pointer-events: none;
   }
   .card:hover {
     background: var(--bg-card-hover);
-    border-color: rgba(255,255,255,0.15);
+    border-color: var(--border-hover);
     transform: translateY(-2px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    box-shadow: var(--shadow-card);
   }
 
   .card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px; position: relative;
   }
-  .card-title { font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+  .card-title { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
   .card-icon {
-    width: 32px; height: 32px;
-    border-radius: 8px;
+    width: 36px; height: 36px;
+    border-radius: var(--radius-sm);
     display: flex; align-items: center; justify-content: center;
-    font-size: 16px;
+    font-size: 18px;
   }
+  .card-icon.purple { background: rgba(139,92,246,0.12); }
+  .card-icon.blue { background: rgba(59,130,246,0.12); }
+  .card-icon.green { background: rgba(16,185,129,0.12); }
+  .card-icon.orange { background: rgba(245,158,11,0.12); }
 
   .card-value {
-    font-size: 28px;
-    font-weight: 800;
-    letter-spacing: -1px;
-    margin-bottom: 4px;
+    font-size: 32px; font-weight: 900; letter-spacing: -1.5px;
+    margin-bottom: 6px; line-height: 1;
   }
   .card-sub {
-    font-size: 12px;
-    color: var(--text-secondary);
-    display: flex;
-    align-items: center;
-    gap: 4px;
+    font-size: 12px; color: var(--text-secondary);
+    display: flex; align-items: center; gap: 6px;
   }
-  .card-sub .up { color: var(--accent-green); }
-  .card-sub .down { color: var(--accent-red); }
-
-  /* Stat cards */
-  .stat-card .card-icon.purple { background: rgba(139,92,246,0.15); color: var(--accent-purple); }
-  .stat-card .card-icon.blue { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
-  .stat-card .card-icon.green { background: rgba(16,185,129,0.15); color: var(--accent-green); }
-  .stat-card .card-icon.orange { background: rgba(245,158,11,0.15); color: var(--accent-orange); }
+  .card-sub .up { color: var(--accent-green); font-weight: 600; }
+  .card-sub .down { color: var(--accent-red); font-weight: 600; }
 
   /* Progress bar */
-  .progress-bar {
-    width: 100%;
-    height: 6px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 3px;
+  .progress {
+    width: 100%; height: 4px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 2px;
     overflow: hidden;
-    margin-top: 12px;
+    margin-top: 14px;
   }
   .progress-fill {
-    height: 100%;
-    border-radius: 3px;
-    transition: width 1.5s ease;
+    height: 100%; border-radius: 2px;
+    transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Hygiene table */
-  .hygiene-table { width: 100%; border-collapse: collapse; }
-  .hygiene-table th {
+  /* ===== Data Table ===== */
+  .data-table { width: 100%; border-collapse: collapse; }
+  .data-table th {
     text-align: left;
-    font-size: 11px;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    color: var(--text-secondary);
-    padding: 8px 12px;
-    border-bottom: 1px solid var(--border);
+    font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--text-muted); padding: 10px 12px;
+    border-bottom: 1px solid var(--border); font-weight: 700;
   }
-  .hygiene-table td {
-    padding: 12px;
-    font-size: 13px;
-    border-bottom: 1px solid rgba(255,255,255,0.03);
+  .data-table td {
+    padding: 14px 12px; font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+    transition: var(--transition);
   }
-  .hygiene-table tr:hover { background: rgba(255,255,255,0.02); }
+  .data-table tbody tr { cursor: pointer; }
+  .data-table tbody tr:hover td { background: rgba(255,255,255,0.02); }
+  .data-table .name { font-weight: 600; }
+  .data-table .amount { font-weight: 700; font-variant-numeric: tabular-nums; }
 
-  .status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 8px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-weight: 600;
+  /* Status badges */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px; border-radius: 6px;
+    font-size: 11px; font-weight: 600; white-space: nowrap;
   }
-  .status-badge.danger { background: rgba(239,68,68,0.15); color: var(--accent-red); }
-  .status-badge.warning { background: rgba(245,158,11,0.15); color: var(--accent-orange); }
-  .status-badge.success { background: rgba(16,185,129,0.15); color: var(--accent-green); }
-  .status-badge.info { background: rgba(59,130,246,0.15); color: var(--accent-blue); }
+  .badge.danger { background: rgba(239,68,68,0.12); color: #f87171; }
+  .badge.warning { background: rgba(245,158,11,0.12); color: #fbbf24; }
+  .badge.success { background: rgba(16,185,129,0.12); color: #34d399; }
+  .badge.info { background: rgba(59,130,246,0.12); color: #60a5fa; }
+  .badge.purple { background: rgba(139,92,246,0.12); color: #a78bfa; }
 
-  /* KPI gauge */
+  /* ===== KPI Rings ===== */
   .kpi-ring {
-    width: 120px; height: 120px;
-    position: relative;
-    margin: 0 auto 12px;
+    width: 110px; height: 110px;
+    position: relative; margin: 0 auto 12px;
   }
   .kpi-ring svg { transform: rotate(-90deg); }
+  .kpi-ring circle { transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
   .kpi-ring-label {
-    position: absolute;
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%); text-align: center;
   }
-  .kpi-ring-value { font-size: 24px; font-weight: 800; }
-  .kpi-ring-text { font-size: 10px; color: var(--text-secondary); }
+  .kpi-ring-value { font-size: 22px; font-weight: 900; line-height: 1; }
+  .kpi-ring-text { font-size: 9px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
 
-  /* Action buttons */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    border: none;
-  }
-  .btn-primary {
-    background: var(--gradient-1);
-    color: white;
-  }
-  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
-  .btn-ghost {
-    background: transparent;
-    color: var(--text-secondary);
-    border: 1px solid var(--border);
-  }
-  .btn-ghost:hover { background: var(--bg-card); color: var(--text-primary); }
-  .btn-sm { padding: 5px 10px; font-size: 11px; }
-
-  /* AI Chat bubble */
-  .ai-chat {
-    background: linear-gradient(135deg, rgba(139,92,246,0.1), rgba(59,130,246,0.1));
-    border: 1px solid rgba(139,92,246,0.2);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 16px;
+  /* ===== AI Chat ===== */
+  .ai-bubble {
+    background: linear-gradient(135deg, rgba(139,92,246,0.08), rgba(59,130,246,0.06));
+    border: 1px solid rgba(139,92,246,0.15);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    margin-bottom: 20px;
     position: relative;
   }
-  .ai-chat::before {
-    content: '🤖 AI';
+  .ai-bubble::before {
+    content: 'AI ASSISTANT';
     position: absolute;
-    top: -10px; left: 16px;
+    top: -9px; left: 16px;
     background: var(--bg-secondary);
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    font-weight: 700;
-    color: var(--accent-purple);
-    border: 1px solid rgba(139,92,246,0.3);
-  }
-  .ai-chat p { font-size: 13px; line-height: 1.6; color: var(--text-primary); }
-  .ai-chat .ai-actions { display: flex; gap: 8px; margin-top: 12px; }
-
-  /* FCST row */
-  .fcst-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 12px;
-    background: rgba(255,255,255,0.02);
-    border-radius: 10px;
-    margin-bottom: 8px;
-  }
-  .fcst-row:hover { background: rgba(255,255,255,0.04); }
-  .fcst-label { font-size: 12px; color: var(--text-secondary); width: 80px; }
-  .fcst-bar-bg {
-    flex: 1;
-    height: 8px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  .fcst-bar-fill { height: 100%; border-radius: 4px; }
-  .fcst-value { font-size: 13px; font-weight: 700; width: 80px; text-align: right; }
-
-  /* Timeline */
-  .timeline-item {
-    display: flex;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.03);
-  }
-  .timeline-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    margin-top: 6px;
-    flex-shrink: 0;
-  }
-  .timeline-content { flex: 1; }
-  .timeline-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; }
-  .timeline-time { font-size: 11px; color: var(--text-secondary); }
-
-  /* Tab navigation */
-  .tabs { display: flex; gap: 4px; margin-bottom: 20px; }
-  .tab {
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 12px;
-    font-weight: 600;
-    cursor: pointer;
-    color: var(--text-secondary);
-    transition: all 0.2s;
-  }
-  .tab:hover { color: var(--text-primary); background: var(--bg-card); }
-  .tab.active { color: var(--text-primary); background: rgba(139,92,246,0.15); }
-
-  /* Section header */
-  .section-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-  .section-title { font-size: 16px; font-weight: 700; }
-
-  /* Animate in */
-  .fade-in { animation: fadeIn 0.6s ease forwards; opacity: 0; }
-  @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
-  .fade-in:nth-child(1) { animation-delay: 0.1s; transform: translateY(10px); }
-  .fade-in:nth-child(2) { animation-delay: 0.2s; transform: translateY(10px); }
-  .fade-in:nth-child(3) { animation-delay: 0.3s; transform: translateY(10px); }
-  .fade-in:nth-child(4) { animation-delay: 0.4s; transform: translateY(10px); }
-
-  /* MCP connector badges */
-  .mcp-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
+    padding: 2px 10px;
     border-radius: 4px;
     font-size: 9px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    color: var(--accent-purple);
+    border: 1px solid rgba(139,92,246,0.25);
   }
-  .mcp-badge.sentral { background: rgba(139,92,246,0.2); color: var(--accent-purple); }
-  .mcp-badge.outlook { background: rgba(59,130,246,0.2); color: var(--accent-blue); }
-  .mcp-badge.knowledge { background: rgba(16,185,129,0.2); color: var(--accent-green); }
-  .mcp-badge.semantic { background: rgba(236,72,153,0.2); color: var(--accent-pink); }
+  .ai-bubble p { font-size: 13px; line-height: 1.7; }
+  .ai-bubble .actions { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
 
-  /* Scroll area */
-  .scroll-area { max-height: 320px; overflow-y: auto; }
-  .scroll-area::-webkit-scrollbar { width: 4px; }
-  .scroll-area::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
-
-  /* MEDDPICC canvas */
-  .meddpicc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-  .meddpicc-cell {
-    background: rgba(255,255,255,0.03);
+  /* ===== Buttons ===== */
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px; border-radius: var(--radius-sm);
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    transition: var(--transition); border: none;
+    font-family: inherit; white-space: nowrap;
+  }
+  .btn-primary {
+    background: var(--gradient-hero); color: white;
+    box-shadow: 0 2px 12px rgba(139,92,246,0.2);
+  }
+  .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(139,92,246,0.3); }
+  .btn-ghost {
+    background: transparent; color: var(--text-secondary);
     border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 12px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
   }
-  .meddpicc-cell:hover { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.3); }
-  .meddpicc-cell .letter { font-size: 20px; font-weight: 800; margin-bottom: 4px; }
-  .meddpicc-cell .label { font-size: 10px; color: var(--text-secondary); }
-  .meddpicc-cell.filled { border-color: var(--accent-green); }
-  .meddpicc-cell.filled .letter { color: var(--accent-green); }
-  .meddpicc-cell.empty { border-color: var(--accent-red); opacity: 0.6; }
-  .meddpicc-cell.empty .letter { color: var(--accent-red); }
+  .btn-ghost:hover { background: var(--bg-card); color: var(--text-primary); border-color: var(--border-hover); }
+  .btn-sm { padding: 6px 12px; font-size: 11px; }
+  .btn-danger { background: rgba(239,68,68,0.12); color: #f87171; border: 1px solid rgba(239,68,68,0.2); }
 
-  /* Drag hint */
+  /* ===== Section ===== */
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .section-title { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+
+  /* ===== Tabs ===== */
+  .tabs { display: flex; gap: 4px; margin-bottom: 20px; background: var(--bg-card); border-radius: var(--radius-md); padding: 4px; }
+  .tab {
+    padding: 8px 16px; border-radius: var(--radius-sm);
+    font-size: 12px; font-weight: 600; cursor: pointer;
+    color: var(--text-secondary); transition: var(--transition);
+  }
+  .tab:hover { color: var(--text-primary); }
+  .tab.active { color: var(--text-primary); background: rgba(139,92,246,0.15); }
+
+  /* ===== Timeline ===== */
+  .timeline-item {
+    display: flex; gap: 14px; padding: 14px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.02);
+    transition: var(--transition);
+  }
+  .timeline-item:hover { background: rgba(255,255,255,0.01); margin: 0 -8px; padding-left: 8px; padding-right: 8px; border-radius: var(--radius-sm); }
+  .timeline-item:last-child { border-bottom: none; }
+  .timeline-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    margin-top: 6px; flex-shrink: 0;
+    box-shadow: 0 0 8px currentColor;
+  }
+  .timeline-content { flex: 1; }
+  .timeline-title { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+  .timeline-time { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+
+  /* ===== FCST Bars ===== */
+  .fcst-row {
+    display: flex; align-items: center; gap: 16px;
+    padding: 14px; background: rgba(255,255,255,0.015);
+    border-radius: var(--radius-md); margin-bottom: 8px;
+    transition: var(--transition);
+  }
+  .fcst-row:hover { background: rgba(255,255,255,0.03); }
+  .fcst-row.highlight {
+    background: rgba(139,92,246,0.06);
+    border: 1px solid rgba(139,92,246,0.15);
+  }
+  .fcst-label { font-size: 12px; color: var(--text-secondary); width: 80px; font-weight: 500; }
+  .fcst-bar-bg {
+    flex: 1; height: 8px;
+    background: rgba(255,255,255,0.04);
+    border-radius: 4px; overflow: hidden;
+  }
+  .fcst-bar-fill {
+    height: 100%; border-radius: 4px;
+    transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .fcst-value { font-size: 14px; font-weight: 800; width: 80px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* ===== Drop Zone ===== */
   .drop-zone {
-    border: 2px dashed rgba(139,92,246,0.3);
-    border-radius: 12px;
-    padding: 24px;
+    border: 2px dashed rgba(139,92,246,0.2);
+    border-radius: var(--radius-lg);
+    padding: 32px;
     text-align: center;
     color: var(--text-secondary);
     font-size: 13px;
-    transition: all 0.3s;
+    transition: var(--transition);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .drop-zone::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at center, rgba(139,92,246,0.03), transparent);
+  }
+  .drop-zone:hover { border-color: var(--accent-purple); background: rgba(139,92,246,0.04); }
+  .drop-zone .icon { font-size: 32px; margin-bottom: 8px; display: block; }
+
+  /* ===== MEDDPICC ===== */
+  .meddpicc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .meddpicc-cell {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+  .meddpicc-cell:hover { background: rgba(139,92,246,0.08); border-color: rgba(139,92,246,0.3); transform: translateY(-2px); }
+  .meddpicc-cell .letter { font-size: 22px; font-weight: 900; margin-bottom: 4px; }
+  .meddpicc-cell .label { font-size: 10px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+  .meddpicc-cell .detail { font-size: 10px; margin-top: 6px; line-height: 1.4; }
+  .meddpicc-cell.filled { border-color: rgba(16,185,129,0.3); background: rgba(16,185,129,0.04); }
+  .meddpicc-cell.filled .letter { color: var(--accent-green); }
+  .meddpicc-cell.empty { border-color: rgba(239,68,68,0.2); opacity: 0.7; }
+  .meddpicc-cell.empty .letter { color: var(--accent-red); }
+  .meddpicc-cell.warn { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.04); }
+  .meddpicc-cell.warn .letter { color: var(--accent-orange); }
+
+  /* ===== Hygiene suggestion ===== */
+  .suggestion {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+  .suggestion .title { font-size: 11px; font-weight: 700; margin-bottom: 6px; }
+  .suggestion .body { font-size: 13px; line-height: 1.6; }
+  .suggestion .source { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
+  .suggestion.warn { border-color: rgba(245,158,11,0.2); }
+  .suggestion.warn .title { color: var(--accent-orange); }
+  .suggestion.danger { border-color: rgba(239,68,68,0.2); }
+  .suggestion.danger .title { color: var(--accent-red); }
+  .suggestion.success { border-color: rgba(16,185,129,0.2); }
+  .suggestion.success .title { color: var(--accent-green); }
+
+  /* Quest cards */
+  .quest {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 14px;
+    transition: var(--transition);
     cursor: pointer;
   }
-  .drop-zone:hover { border-color: var(--accent-purple); background: rgba(139,92,246,0.05); }
+  .quest:hover { transform: translateY(-1px); }
+  .quest .icon { font-size: 22px; margin-bottom: 6px; }
+  .quest .name { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+  .quest .pts { font-size: 10px; }
+  .quest.done { background: rgba(16,185,129,0.06); border-color: rgba(16,185,129,0.2); }
+  .quest.done .pts { color: var(--accent-green); }
+  .quest.active { background: rgba(245,158,11,0.06); border-color: rgba(245,158,11,0.2); }
+  .quest.active .pts { color: var(--accent-orange); }
+  .quest.locked { opacity: 0.45; }
+  .quest.locked .pts { color: var(--text-muted); }
+
+  /* Scroll area */
+  .scroll-y { max-height: 380px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.08) transparent; }
+  .scroll-y::-webkit-scrollbar { width: 4px; }
+  .scroll-y::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+  /* ===== Page transitions ===== */
+  .page { display: none; animation: pageIn 0.4s ease; }
+  .page.visible { display: block; }
+  @keyframes pageIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Stagger children */
+  .stagger > * {
+    opacity: 0; animation: staggerIn 0.5s ease forwards;
+  }
+  .stagger > *:nth-child(1) { animation-delay: 0.05s; }
+  .stagger > *:nth-child(2) { animation-delay: 0.1s; }
+  .stagger > *:nth-child(3) { animation-delay: 0.15s; }
+  .stagger > *:nth-child(4) { animation-delay: 0.2s; }
+  .stagger > *:nth-child(5) { animation-delay: 0.25s; }
+  .stagger > *:nth-child(6) { animation-delay: 0.3s; }
+  @keyframes staggerIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ===== Responsive ===== */
+  @media (max-width: 1200px) {
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .meddpicc-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 900px) {
+    .sidebar { display: none; }
+    .main { margin-left: 0; padding: 16px; }
+    .grid-2-1 { grid-template-columns: 1fr; }
+    .grid-2 { grid-template-columns: 1fr; }
+    .search-global { width: 200px; }
+  }
 </style>
 </head>
 <body>
 
+<div class="ambient">
+  <div class="blob"></div>
+  <div class="blob"></div>
+  <div class="blob"></div>
+</div>
+
 <div class="app">
-  <!-- Sidebar -->
+  <!-- ===== Sidebar ===== -->
   <nav class="sidebar">
     <div class="logo">
-      <div class="logo-icon">⚡</div>
+      <div class="logo-icon">S</div>
       <div>
         <div class="logo-text">AM Super-Agent</div>
-        <span class="logo-badge">BETA</span>
+        <span class="logo-version">HACKATHON</span>
       </div>
     </div>
 
     <div class="nav-section">
-      <div class="nav-section-title">Overview</div>
-      <div class="nav-item active" onclick="showPage('dashboard')">
-        <span class="nav-icon">📊</span> Dashboard
+      <div class="nav-label">Overview</div>
+      <div class="nav-item active" data-page="dashboard">
+        <span class="nav-icon" style="font-size:11px;font-weight:800">D</span> Dashboard
       </div>
-      <div class="nav-item" onclick="showPage('meeting')">
-        <span class="nav-icon">🎯</span> Meeting Prep
+      <div class="nav-item" data-page="meeting">
+        <span class="nav-icon" style="font-size:11px;font-weight:800">M</span> Meeting Prep
       </div>
     </div>
 
     <div class="nav-section">
-      <div class="nav-section-title">Phase 1</div>
-      <div class="nav-item" onclick="showPage('pipeline')">
-        <span class="nav-icon">🔧</span> Pipeline Hygiene
+      <div class="nav-label">Phase 1</div>
+      <div class="nav-item" data-page="pipeline">
+        <span class="nav-icon" style="font-size:11px;font-weight:800">P</span> Pipeline Hygiene
         <span class="nav-badge">3</span>
       </div>
-      <div class="nav-item" onclick="showPage('fcst')">
-        <span class="nav-icon">📈</span> Smart FCST
+      <div class="nav-item" data-page="fcst">
+        <span class="nav-icon" style="font-size:11px;font-weight:800">F</span> Smart FCST
       </div>
     </div>
 
     <div class="nav-section">
-      <div class="nav-section-title">Phase 2</div>
-      <div class="nav-item" onclick="showPage('kpi')">
-        <span class="nav-icon">🏆</span> KPI Manager
+      <div class="nav-label">Phase 2</div>
+      <div class="nav-item" data-page="kpi">
+        <span class="nav-icon" style="font-size:11px;font-weight:800">K</span> KPI Manager
       </div>
     </div>
 
     <div class="nav-section">
-      <div class="nav-section-title">Phase 3</div>
-      <div class="nav-item" onclick="showPage('meddpicc')">
-        <span class="nav-icon">🧩</span> MEDDPICC Canvas
+      <div class="nav-label">Phase 3</div>
+      <div class="nav-item" data-page="meddpicc">
+        <span class="nav-icon" style="font-size:11px;font-weight:800">X</span> MEDDPICC Canvas
       </div>
     </div>
 
-    <div class="nav-section" style="margin-top:auto">
-      <div class="nav-section-title">MCP 연결 상태</div>
-      <div style="padding:0 12px; display:flex; flex-wrap:wrap; gap:4px;">
-        <span class="mcp-badge sentral">● Sentral</span>
-        <span class="mcp-badge outlook">● Outlook</span>
-        <span class="mcp-badge knowledge">● Knowledge</span>
-        <span class="mcp-badge semantic">● Semantic</span>
+    <div class="mcp-status">
+      <div class="mcp-status-title">MCP Connections</div>
+      <div class="mcp-status-grid">
+        <span class="mcp-dot sentral">● Sentral</span>
+        <span class="mcp-dot outlook">● Outlook</span>
+        <span class="mcp-dot knowledge">● Knowledge</span>
+        <span class="mcp-dot semantic">● Semantic</span>
+        <span class="mcp-dot coe">● COE</span>
       </div>
     </div>
   </nav>
 
-  <!-- Main -->
+  <!-- ===== Main ===== -->
   <main class="main">
-    <!-- Top bar -->
     <div class="topbar">
       <div class="topbar-left">
         <h1 id="page-title">Dashboard</h1>
         <p id="page-subtitle">안녕하세요 재호님, 오늘의 파이프라인 현황입니다</p>
       </div>
       <div class="topbar-right">
-        <div class="search-box">
-          <span>🔍</span>
+        <div class="search-global">
+          <span class="icon" style="color:var(--text-muted)">⌕</span>
           <input type="text" placeholder="고객명 또는 Oppty 검색..." />
+          <kbd>⌘K</kbd>
         </div>
-        <div class="btn-icon" style="position:relative" title="알림">🔔<span style="position:absolute;top:4px;right:4px;width:7px;height:7px;background:var(--accent-red);border-radius:50%;border:2px solid var(--bg-primary);"></span></div>
+        <div class="topbar-btn" title="알림">●<span class="dot"></span></div>
+        <div class="topbar-btn" title="설정">⚙</div>
         <div class="avatar">JH</div>
       </div>
     </div>
 
-    <!-- ============ DASHBOARD PAGE ============ -->
-    <div id="page-dashboard">
-      <!-- AI Insight -->
-      <div class="ai-chat fade-in" style="margin-bottom:24px">
-        <p>📋 <b>오늘의 브리핑:</b> Close Date가 이번 주인 Oppty 3건 중 <b>2건의 Next Step이 2주 이상 미업데이트</b>입니다.
-        이메일 분석 결과 Samsung SDS 건은 기술검토 진행 중이며, Hyundai AutoEver 건은 예산 승인 대기 상태로 파악됩니다.
-        <b>Pipeline Hygiene</b>에서 확인하시겠습니까?</p>
-        <div class="ai-actions">
-          <button class="btn btn-primary btn-sm" onclick="showPage('pipeline')">🔧 Hygiene 확인</button>
-          <button class="btn btn-ghost btn-sm">📧 이메일 상세 보기</button>
-          <button class="btn btn-ghost btn-sm">⏰ 나중에 알림</button>
+    <!-- ============ DASHBOARD ============ -->
+    <div id="page-dashboard" class="page visible">
+      <div class="ai-bubble stagger">
+        <p><b>오늘의 브리핑 —</b> Close Date가 이번 주인 Oppty 3건 중 <b>2건의 Next Step이 2주 이상 미업데이트</b>입니다.
+        이메일 분석 결과 Samsung SDS 건은 기술검토 진행 중이며, Hyundai AutoEver 건은 예산 승인 대기 상태로 파악됩니다.</p>
+        <div class="actions">
+          <button class="btn btn-primary btn-sm" onclick="navigate('pipeline')">Hygiene 확인</button>
+          <button class="btn btn-ghost btn-sm">이메일 상세</button>
+          <button class="btn btn-ghost btn-sm">나중에</button>
         </div>
       </div>
 
-      <!-- Stat cards -->
-      <div class="grid-4">
-        <div class="card stat-card fade-in">
+      <div class="grid-4 stagger">
+        <div class="card">
           <div class="card-header">
             <span class="card-title">Active Pipeline</span>
-            <div class="card-icon purple">💰</div>
+            <div class="card-icon purple">$</div>
           </div>
           <div class="card-value">$2.4M</div>
           <div class="card-sub"><span class="up">▲ 12%</span> vs last month</div>
-          <div class="progress-bar"><div class="progress-fill" style="width:68%;background:var(--gradient-1)"></div></div>
+          <div class="progress"><div class="progress-fill" style="width:68%;background:var(--gradient-hero)"></div></div>
         </div>
-
-        <div class="card stat-card fade-in">
+        <div class="card">
           <div class="card-header">
             <span class="card-title">Hygiene Score</span>
-            <div class="card-icon green">✅</div>
+            <div class="card-icon green">✓</div>
           </div>
-          <div class="card-value">87%</div>
+          <div class="card-value">87<span style="font-size:18px;color:var(--text-secondary)">%</span></div>
           <div class="card-sub"><span class="up">▲ 5%</span> 3건 수정 필요</div>
-          <div class="progress-bar"><div class="progress-fill" style="width:87%;background:var(--gradient-2)"></div></div>
+          <div class="progress"><div class="progress-fill" style="width:87%;background:var(--gradient-cool)"></div></div>
         </div>
-
-        <div class="card stat-card fade-in">
+        <div class="card">
           <div class="card-header">
             <span class="card-title">FCST Accuracy</span>
-            <div class="card-icon blue">🎯</div>
+            <div class="card-icon blue">%</div>
           </div>
-          <div class="card-value">94%</div>
+          <div class="card-value">94<span style="font-size:18px;color:var(--text-secondary)">%</span></div>
           <div class="card-sub"><span class="up">▲ 2%</span> vs Q4 actual</div>
-          <div class="progress-bar"><div class="progress-fill" style="width:94%;background:var(--accent-blue)"></div></div>
+          <div class="progress"><div class="progress-fill" style="width:94%;background:var(--accent-blue)"></div></div>
         </div>
-
-        <div class="card stat-card fade-in">
+        <div class="card">
           <div class="card-header">
             <span class="card-title">KPI Attainment</span>
-            <div class="card-icon orange">🏆</div>
+            <div class="card-icon orange">★</div>
           </div>
-          <div class="card-value">72%</div>
+          <div class="card-value">72<span style="font-size:18px;color:var(--text-secondary)">%</span></div>
           <div class="card-sub"><span class="down">▼ 3%</span> target: 100%</div>
-          <div class="progress-bar"><div class="progress-fill" style="width:72%;background:var(--gradient-3)"></div></div>
+          <div class="progress"><div class="progress-fill" style="width:72%;background:var(--gradient-warm)"></div></div>
         </div>
       </div>
 
-      <!-- Pipeline + Activity -->
       <div class="grid-2-1">
-        <div class="card fade-in">
+        <div class="card">
           <div class="section-header">
             <span class="section-title">파이프라인 요약</span>
-            <button class="btn btn-ghost btn-sm" onclick="showPage('pipeline')">전체 보기 →</button>
+            <button class="btn btn-ghost btn-sm" onclick="navigate('pipeline')">전체 보기 →</button>
           </div>
-          <table class="hygiene-table">
-            <thead>
-              <tr>
-                <th>Opportunity</th>
-                <th>Account</th>
-                <th>Amount</th>
-                <th>Stage</th>
-                <th>Status</th>
-              </tr>
-            </thead>
+          <table class="data-table">
+            <thead><tr><th>Opportunity</th><th>Account</th><th>Amount</th><th>Stage</th><th>Status</th></tr></thead>
             <tbody>
-              <tr>
-                <td style="font-weight:600">Cloud Migration Phase 2</td>
-                <td>Samsung SDS</td>
-                <td>$850K</td>
-                <td>Qualified</td>
-                <td><span class="status-badge warning">⚠️ Next Step 미갱신</span></td>
-              </tr>
-              <tr>
-                <td style="font-weight:600">Data Lake 구축</td>
-                <td>Hyundai AutoEver</td>
-                <td>$620K</td>
-                <td>Prospect</td>
-                <td><span class="status-badge danger">🔴 Close Date 초과</span></td>
-              </tr>
-              <tr>
-                <td style="font-weight:600">AI/ML Platform</td>
-                <td>LG CNS</td>
-                <td>$430K</td>
-                <td>Best Case</td>
-                <td><span class="status-badge success">✅ 정상</span></td>
-              </tr>
-              <tr>
-                <td style="font-weight:600">Security Modernization</td>
-                <td>SK C&C</td>
-                <td>$280K</td>
-                <td>Qualified</td>
-                <td><span class="status-badge success">✅ 정상</span></td>
-              </tr>
-              <tr>
-                <td style="font-weight:600">SAP on AWS</td>
-                <td>Doosan Digital</td>
-                <td>$210K</td>
-                <td>Prospect</td>
-                <td><span class="status-badge info">🆕 신규</span></td>
-              </tr>
+              <tr><td class="name">Cloud Migration Phase 2</td><td>Samsung SDS</td><td class="amount">$850K</td><td>Qualified</td><td><span class="badge warning">⚠ Next Step 미갱신</span></td></tr>
+              <tr><td class="name">Data Lake 구축</td><td>Hyundai AutoEver</td><td class="amount">$620K</td><td>Prospect</td><td><span class="badge danger">● Close Date 초과</span></td></tr>
+              <tr><td class="name">AI/ML Platform</td><td>LG CNS</td><td class="amount">$430K</td><td>Best Case</td><td><span class="badge success">✓ 정상</span></td></tr>
+              <tr><td class="name">Security Modernization</td><td>SK C&C</td><td class="amount">$280K</td><td>Qualified</td><td><span class="badge success">✓ 정상</span></td></tr>
+              <tr><td class="name">SAP on AWS</td><td>Doosan Digital</td><td class="amount">$210K</td><td>Prospect</td><td><span class="badge info">★ 신규</span></td></tr>
             </tbody>
           </table>
         </div>
 
-        <div class="card fade-in">
+        <div class="card">
           <div class="section-header">
             <span class="section-title">최근 활동</span>
           </div>
-          <div class="scroll-area">
-            <div class="timeline-item">
-              <div class="timeline-dot" style="background:var(--accent-purple)"></div>
-              <div class="timeline-content">
-                <div class="timeline-title">Samsung SDS - 기술검토 미팅 메일 수신</div>
-                <div class="timeline-time">
-                  <span class="mcp-badge outlook" style="margin-right:4px">Outlook</span> 30분 전
-                </div>
-              </div>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-dot" style="background:var(--accent-green)"></div>
-              <div class="timeline-content">
-                <div class="timeline-title">LG CNS Oppty → Best Case 스테이지 변경</div>
-                <div class="timeline-time">
-                  <span class="mcp-badge sentral" style="margin-right:4px">Sentral</span> 2시간 전
-                </div>
-              </div>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-dot" style="background:var(--accent-blue)"></div>
-              <div class="timeline-content">
-                <div class="timeline-title">Hyundai AutoEver - 예산승인 관련 첨부파일 분석 완료</div>
-                <div class="timeline-time">
-                  <span class="mcp-badge semantic" style="margin-right:4px">Semantic</span> 3시간 전
-                </div>
-              </div>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-dot" style="background:var(--accent-orange)"></div>
-              <div class="timeline-content">
-                <div class="timeline-title">Q1 FCST 제출 마감 D-3 알림</div>
-                <div class="timeline-time">
-                  <span class="mcp-badge sentral" style="margin-right:4px">Sentral</span> 오늘 오전
-                </div>
-              </div>
-            </div>
-            <div class="timeline-item">
-              <div class="timeline-dot" style="background:var(--accent-pink)"></div>
-              <div class="timeline-content">
-                <div class="timeline-title">SK C&C - 신규 세일즈 시그널 감지 (이메일 분석)</div>
-                <div class="timeline-time">
-                  <span class="mcp-badge semantic" style="margin-right:4px">Semantic</span> 어제
-                </div>
-              </div>
-            </div>
+          <div class="scroll-y">
+            <div class="timeline-item"><div class="timeline-dot" style="color:var(--accent-purple);background:var(--accent-purple)"></div><div class="timeline-content"><div class="timeline-title">Samsung SDS — 기술검토 미팅 메일 수신</div><div class="timeline-time"><span class="mcp-dot outlook">Outlook</span> 30분 전</div></div></div>
+            <div class="timeline-item"><div class="timeline-dot" style="color:var(--accent-green);background:var(--accent-green)"></div><div class="timeline-content"><div class="timeline-title">LG CNS Oppty → Best Case 스테이지 변경</div><div class="timeline-time"><span class="mcp-dot sentral">Sentral</span> 2시간 전</div></div></div>
+            <div class="timeline-item"><div class="timeline-dot" style="color:var(--accent-pink);background:var(--accent-pink)"></div><div class="timeline-content"><div class="timeline-title">Hyundai AutoEver — 예산승인 첨부파일 분석 완료</div><div class="timeline-time"><span class="mcp-dot semantic">Semantic</span> 3시간 전</div></div></div>
+            <div class="timeline-item"><div class="timeline-dot" style="color:var(--accent-orange);background:var(--accent-orange)"></div><div class="timeline-content"><div class="timeline-title">Q1 FCST 제출 마감 D-3 알림</div><div class="timeline-time"><span class="mcp-dot sentral">Sentral</span> 오전</div></div></div>
+            <div class="timeline-item"><div class="timeline-dot" style="color:var(--accent-cyan);background:var(--accent-cyan)"></div><div class="timeline-content"><div class="timeline-title">SK C&C — 신규 세일즈 시그널 감지</div><div class="timeline-time"><span class="mcp-dot semantic">Semantic</span> 어제</div></div></div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ============ MEETING PREP PAGE ============ -->
-    <div id="page-meeting" style="display:none">
-      <div class="ai-chat fade-in">
-        <p>고객명을 입력하시면 <b>MCP 연동 데이터</b>를 기반으로 미팅 브리핑을 자동 생성합니다.
-        Salesforce 파이프라인, 이메일 히스토리, AWS 서비스 사용량, 산업 동향을 종합 분석합니다.</p>
+    <!-- ============ MEETING PREP ============ -->
+    <div id="page-meeting" class="page">
+      <div class="ai-bubble">
+        <p>고객명을 입력하면 <b>11개 MCP 서버</b>의 데이터를 종합하여 미팅 브리핑을 자동 생성합니다. CRM 파이프라인, 이메일 히스토리, 첨부파일 분석, 서비스 사용량, 산업 동향까지 한번에.</p>
       </div>
-
-      <div class="card fade-in" style="max-width:600px;margin:0 auto">
-        <h2 style="text-align:center;font-size:28px;font-weight:800;margin-bottom:8px;background:linear-gradient(135deg,#8b5cf6,#3b82f6,#10b981);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Meeting Prep AI</h2>
-        <p style="text-align:center;color:var(--text-secondary);margin-bottom:24px;font-size:13px;">고객명을 입력하면 AI가 미팅 브리핑을 자동 생성합니다</p>
-        <div class="search-box" style="width:100%;padding:12px 16px;margin-bottom:16px">
-          <span>🔍</span>
+      <div class="card" style="max-width:620px;margin:0 auto;padding:32px">
+        <h2 style="text-align:center;font-size:30px;font-weight:900;margin-bottom:6px;background:var(--gradient-hero);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">Meeting Prep AI</h2>
+        <p style="text-align:center;color:var(--text-muted);margin-bottom:28px;font-size:13px;">고객명을 입력하면 AI가 미팅 브리핑을 자동 생성합니다</p>
+        <div class="search-global" style="width:100%;padding:14px 18px;margin-bottom:20px">
+          <span class="icon" style="color:var(--text-muted)">⌕</span>
           <input type="text" placeholder="고객명 입력 (예: Samsung SDS, LG CNS...)" style="font-size:15px" />
         </div>
-        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px">
-          <span class="mcp-badge sentral">Salesforce 파이프라인</span>
-          <span class="mcp-badge outlook">이메일 히스토리</span>
-          <span class="mcp-badge semantic">첨부파일 분석</span>
-          <span class="mcp-badge knowledge">AWS 문서/동향</span>
+        <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:20px">
+          <span class="mcp-dot sentral">Salesforce 파이프라인</span>
+          <span class="mcp-dot outlook">이메일 히스토리</span>
+          <span class="mcp-dot semantic">첨부파일 & 벡터DB</span>
+          <span class="mcp-dot knowledge">AWS 문서/동향</span>
+          <span class="mcp-dot coe">COE 장애이력</span>
         </div>
-        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:14px">⚡ 브리핑 생성</button>
+        <button class="btn btn-primary" style="width:100%;justify-content:center;padding:14px;font-size:14px;">브리핑 생성</button>
       </div>
     </div>
 
-    <!-- ============ PIPELINE HYGIENE PAGE ============ -->
-    <div id="page-pipeline" style="display:none">
-      <div class="ai-chat fade-in">
-        <p>🔍 <b>Hygiene 분석 완료:</b> 총 12개 Oppty 중 <b>3건</b>에서 문제를 발견했습니다.
-        이메일과 미팅 노트를 분석하여 수정안을 준비했습니다. <b>원클릭으로 승인</b>하시겠습니까?</p>
-        <div class="ai-actions">
-          <button class="btn btn-primary btn-sm">✅ 전체 수정안 승인</button>
-          <button class="btn btn-ghost btn-sm">👁️ 개별 확인</button>
+    <!-- ============ PIPELINE HYGIENE ============ -->
+    <div id="page-pipeline" class="page">
+      <div class="ai-bubble">
+        <p><b>Hygiene 분석 완료 —</b> 총 12개 Oppty 중 <b>3건</b>에서 문제를 발견했습니다. 이메일과 미팅 노트를 분석하여 수정안을 준비했습니다.</p>
+        <div class="actions">
+          <button class="btn btn-primary btn-sm">전체 수정안 승인</button>
+          <button class="btn btn-ghost btn-sm">개별 확인</button>
         </div>
       </div>
 
       <div class="tabs">
-        <div class="tab active">⚠️ 수정 필요 (3)</div>
-        <div class="tab">✅ 정상 (9)</div>
-        <div class="tab">🆕 신규 추천 (1)</div>
+        <div class="tab active">수정 필요 (3)</div>
+        <div class="tab">정상 (9)</div>
+        <div class="tab">신규 추천 (1)</div>
       </div>
 
-      <div class="card fade-in" style="margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <div>
-            <div style="font-weight:700;font-size:15px">Cloud Migration Phase 2 — Samsung SDS</div>
-            <div style="font-size:12px;color:var(--text-secondary)">$850K · Qualified · Close: 2026-03-28</div>
+      <div class="stagger">
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div><div style="font-weight:700;font-size:15px">Cloud Migration Phase 2 — Samsung SDS</div><div style="font-size:12px;color:var(--text-muted)">$850K · Qualified · Close: 2026-03-28</div></div>
+            <span class="badge warning">Next Step 미갱신 (14일)</span>
           </div>
-          <span class="status-badge warning">Next Step 미갱신 (14일)</span>
-        </div>
-        <div style="background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:12px;margin-bottom:12px">
-          <div style="font-size:11px;color:var(--accent-orange);font-weight:700;margin-bottom:6px">💡 AI 수정 제안</div>
-          <div style="font-size:13px">
-            <b>Next Step:</b> "3/25 기술검토 미팅 결과 확인 후 PoC 범위 확정" <br>
-            <span style="font-size:11px;color:var(--text-secondary)">근거: 3/24 수신 이메일 — "기술검토 일정 3/25 확정" (김부장)</span>
+          <div class="suggestion warn">
+            <div class="title">AI 수정 제안</div>
+            <div class="body"><b>Next Step:</b> "3/25 기술검토 미팅 결과 확인 후 PoC 범위 확정"</div>
+            <div class="source">근거: 3/24 수신 이메일 — "기술검토 일정 3/25 확정" (김부장)</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary btn-sm">승인 & SFDC 반영</button>
+            <button class="btn btn-ghost btn-sm">✏ 수정</button>
+            <button class="btn btn-ghost btn-sm">✕ 무시</button>
           </div>
         </div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-primary btn-sm">✅ 승인 & SFDC 업데이트</button>
-          <button class="btn btn-ghost btn-sm">✏️ 수정</button>
-          <button class="btn btn-ghost btn-sm">❌ 무시</button>
-        </div>
-      </div>
 
-      <div class="card fade-in" style="margin-bottom:16px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <div>
-            <div style="font-weight:700;font-size:15px">Data Lake 구축 — Hyundai AutoEver</div>
-            <div style="font-size:12px;color:var(--text-secondary)">$620K · Prospect · Close: 2026-03-20</div>
+        <div class="card" style="margin-bottom:16px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div><div style="font-weight:700;font-size:15px">Data Lake 구축 — Hyundai AutoEver</div><div style="font-size:12px;color:var(--text-muted)">$620K · Prospect · Close: 2026-03-20</div></div>
+            <span class="badge danger">Close Date 초과 (4일)</span>
           </div>
-          <span class="status-badge danger">Close Date 초과 (4일)</span>
-        </div>
-        <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:12px;margin-bottom:12px">
-          <div style="font-size:11px;color:var(--accent-red);font-weight:700;margin-bottom:6px">💡 AI 수정 제안</div>
-          <div style="font-size:13px">
-            <b>Close Date:</b> 2026-03-20 → <b>2026-04-30</b> <br>
-            <b>Stage:</b> Prospect (유지) <br>
-            <span style="font-size:11px;color:var(--text-secondary)">근거: 첨부파일 분석 — 예산승인서 4월 초 예정 확인</span>
+          <div class="suggestion danger">
+            <div class="title">AI 수정 제안</div>
+            <div class="body"><b>Close Date:</b> 2026-03-20 → <b>2026-04-30</b><br><b>Stage:</b> Prospect (유지)</div>
+            <div class="source">근거: 첨부파일 분석 — 예산승인서 4월 초 예정 확인</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary btn-sm">승인 & SFDC 반영</button>
+            <button class="btn btn-ghost btn-sm">✏ 수정</button>
+            <button class="btn btn-ghost btn-sm">✕ 무시</button>
           </div>
         </div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-primary btn-sm">✅ 승인 & SFDC 업데이트</button>
-          <button class="btn btn-ghost btn-sm">✏️ 수정</button>
-          <button class="btn btn-ghost btn-sm">❌ 무시</button>
-        </div>
-      </div>
 
-      <!-- 신규 Oppty 추천 -->
-      <div class="card fade-in" style="border-color:rgba(16,185,129,0.3)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <div>
-            <div style="font-weight:700;font-size:15px">🆕 신규 Oppty 추천 — SK C&C</div>
-            <div style="font-size:12px;color:var(--text-secondary)">이메일 분석 기반 세일즈 시그널 감지</div>
+        <div class="card" style="border-color:rgba(16,185,129,0.2)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+            <div><div style="font-weight:700;font-size:15px">신규 Oppty 추천 — SK C&C</div><div style="font-size:12px;color:var(--text-muted)">이메일 분석 기반 세일즈 시그널 감지</div></div>
+            <span class="badge purple">AI 추천</span>
           </div>
-          <span class="status-badge info">AI 추천</span>
-        </div>
-        <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:12px;margin-bottom:12px">
-          <div style="font-size:11px;color:var(--accent-green);font-weight:700;margin-bottom:6px">📧 이메일 시그널</div>
-          <div style="font-size:13px">
-            "컨테이너 기반 마이크로서비스 전환 검토 중... AWS ECS/EKS 비교 자료 요청"<br>
-            <span style="font-size:11px;color:var(--text-secondary)">— 이상무 차장, 3/22 수신</span>
+          <div class="suggestion success">
+            <div class="title">이메일 시그널</div>
+            <div class="body">"컨테이너 기반 마이크로서비스 전환 검토 중... AWS ECS/EKS 비교 자료 요청"</div>
+            <div class="source">— 이상무 차장, 3/22 수신</div>
           </div>
-        </div>
-        <div style="display:flex;gap:8px">
-          <button class="btn btn-primary btn-sm">⚡ Oppty 자동 생성</button>
-          <button class="btn btn-ghost btn-sm">📧 이메일 확인</button>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary btn-sm">Oppty 자동 생성</button>
+            <button class="btn btn-ghost btn-sm">이메일 확인</button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- ============ FCST PAGE ============ -->
-    <div id="page-fcst" style="display:none">
-      <div class="ai-chat fade-in">
-        <p>📊 <b>Q1 FCST 분석:</b> Spend 이력과 파이프라인을 교차검증한 결과, 이번 달 예상 FCST는 <b>$1.82M</b>입니다.
-        지난달 대비 <b>+$120K (↑7%)</b> 증가했으며, 주요 변동 사유를 자동 작성했습니다.</p>
-        <div class="ai-actions">
-          <button class="btn btn-primary btn-sm">📥 FLM 제출용 Excel 생성</button>
-          <button class="btn btn-ghost btn-sm">📝 변동 사유 확인</button>
+    <!-- ============ SMART FCST ============ -->
+    <div id="page-fcst" class="page">
+      <div class="ai-bubble">
+        <p><b>Q1 FCST 분석 —</b> Spend 이력과 파이프라인을 교차검증한 결과, 이번 달 예상 FCST는 <b>$1.82M</b>입니다. 지난달 대비 <b>+$120K (↑7%)</b> 증가했으며, 주요 변동 사유를 자동 작성했습니다.</p>
+        <div class="actions">
+          <button class="btn btn-primary btn-sm">FLM 제출용 Excel 생성</button>
+          <button class="btn btn-ghost btn-sm">변동 사유 확인</button>
         </div>
       </div>
 
-      <div class="grid-2" style="margin-bottom:16px">
-        <div class="card fade-in">
-          <div class="section-header">
-            <span class="section-title">FCST 추이</span>
-          </div>
-          <div class="fcst-row">
-            <span class="fcst-label">Jan</span>
-            <div class="fcst-bar-bg"><div class="fcst-bar-fill" style="width:65%;background:var(--gradient-1)"></div></div>
-            <span class="fcst-value">$1.52M</span>
-          </div>
-          <div class="fcst-row">
-            <span class="fcst-label">Feb</span>
-            <div class="fcst-bar-bg"><div class="fcst-bar-fill" style="width:72%;background:var(--gradient-1)"></div></div>
-            <span class="fcst-value">$1.70M</span>
-          </div>
-          <div class="fcst-row" style="background:rgba(139,92,246,0.08);border:1px solid rgba(139,92,246,0.2)">
-            <span class="fcst-label" style="color:var(--accent-purple);font-weight:700">Mar (AI)</span>
-            <div class="fcst-bar-bg"><div class="fcst-bar-fill" style="width:78%;background:var(--gradient-1)"></div></div>
-            <span class="fcst-value" style="color:var(--accent-purple)">$1.82M</span>
-          </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="section-header"><span class="section-title">FCST 추이</span></div>
+          <div class="fcst-row"><span class="fcst-label">Jan</span><div class="fcst-bar-bg"><div class="fcst-bar-fill" style="width:62%;background:var(--gradient-hero)"></div></div><span class="fcst-value">$1.52M</span></div>
+          <div class="fcst-row"><span class="fcst-label">Feb</span><div class="fcst-bar-bg"><div class="fcst-bar-fill" style="width:70%;background:var(--gradient-hero)"></div></div><span class="fcst-value">$1.70M</span></div>
+          <div class="fcst-row highlight"><span class="fcst-label" style="color:var(--accent-purple);font-weight:700">Mar (AI)</span><div class="fcst-bar-bg"><div class="fcst-bar-fill" style="width:76%;background:var(--gradient-hero)"></div></div><span class="fcst-value" style="color:var(--accent-purple)">$1.82M</span></div>
         </div>
-
-        <div class="card fade-in">
-          <div class="section-header">
-            <span class="section-title">ESR Excel 업로드</span>
-          </div>
+        <div class="card">
+          <div class="section-header"><span class="section-title">ESR Excel 업로드</span></div>
           <div class="drop-zone">
-            📂 ESR 엑셀 파일을 여기에 드래그 앤 드롭<br>
-            <span style="font-size:11px;color:var(--text-secondary);margin-top:8px;display:block">
-              .xlsx 파일 → 실시간 SFDC 파이프라인과 교차검증
-            </span>
+            <span class="icon" style="font-size:24px;opacity:0.5">↑</span>
+            ESR 엑셀 파일을 여기에 드래그 앤 드롭<br>
+            <span style="font-size:11px;color:var(--text-muted);margin-top:8px;display:block">.xlsx → 실시간 SFDC 파이프라인과 교차검증</span>
           </div>
-          <div style="margin-top:12px;display:flex;gap:8px;justify-content:center">
-            <span class="mcp-badge sentral">실시간 SFDC 동기화</span>
-            <span class="mcp-badge outlook">이메일 변동사유</span>
+          <div style="margin-top:14px;display:flex;gap:6px;justify-content:center">
+            <span class="mcp-dot sentral">실시간 SFDC 동기화</span>
+            <span class="mcp-dot outlook">이메일 변동사유</span>
           </div>
         </div>
       </div>
 
-      <div class="card fade-in">
-        <div class="section-header">
-          <span class="section-title">AI 변동 사유 (자동 작성)</span>
-        </div>
-        <div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:16px;font-size:13px;line-height:1.8">
+      <div class="card">
+        <div class="section-header"><span class="section-title">AI 변동 사유 (자동 작성)</span></div>
+        <div style="background:rgba(255,255,255,0.02);border-radius:var(--radius-md);padding:18px;font-size:13px;line-height:1.9">
           <p><b>1. Samsung SDS (+$85K):</b> 기술검토 미팅 후 PoC 범위 확대. 3/24 이메일에서 추가 워크로드(AI/ML 파이프라인) 언급 확인.</p>
-          <p style="margin-top:8px"><b>2. Hyundai AutoEver (-$30K):</b> 예산 승인 지연으로 Phase 1 축소 가능성. 4월 초 최종 확정 예정.</p>
-          <p style="margin-top:8px"><b>3. Doosan Digital (+$65K):</b> SAP on AWS 신규 Oppty 생성. Spend 이력 상 EC2/RDS 사용량 증가 추세.</p>
+          <p style="margin-top:10px"><b>2. Hyundai AutoEver (-$30K):</b> 예산 승인 지연으로 Phase 1 축소 가능성. 4월 초 최종 확정 예정.</p>
+          <p style="margin-top:10px"><b>3. Doosan Digital (+$65K):</b> SAP on AWS 신규 Oppty 생성. Spend 이력 상 EC2/RDS 사용량 증가 추세.</p>
         </div>
         <div style="display:flex;gap:8px;margin-top:16px">
-          <button class="btn btn-primary btn-sm">📥 FLM 제출용 Excel 다운로드</button>
-          <button class="btn btn-ghost btn-sm">✏️ 사유 수정</button>
-          <button class="btn btn-ghost btn-sm">📧 FLM에게 이메일 발송</button>
+          <button class="btn btn-primary btn-sm">FLM 제출용 Excel 다운로드</button>
+          <button class="btn btn-ghost btn-sm">사유 수정</button>
+          <button class="btn btn-ghost btn-sm">FLM에게 이메일 발송</button>
         </div>
       </div>
     </div>
 
-    <!-- ============ KPI PAGE ============ -->
-    <div id="page-kpi" style="display:none">
-      <div class="ai-chat fade-in">
-        <p>🏆 재호님, 이번 분기 <b>Quota 달성까지 $280K</b> 남았습니다!
-        Samsung SDS 건이 클로즈되면 <b>달성률 89%</b>로 올라갑니다.
-        그리고 방금 LG CNS 딜을 <b>Mass Migration</b> 실적으로 등록하면 Enterprise KPI 점수를 획득할 수 있어요. 등록할까요?</p>
-        <div class="ai-actions">
-          <button class="btn btn-primary btn-sm">🎯 Mass Migration 등록</button>
-          <button class="btn btn-ghost btn-sm">📊 상세 분석</button>
+    <!-- ============ KPI MANAGER ============ -->
+    <div id="page-kpi" class="page">
+      <div class="ai-bubble">
+        <p>재호님, 이번 분기 <b>Quota 달성까지 $280K</b> 남았습니다! Samsung SDS 건이 클로즈되면 <b>달성률 89%</b>로 올라갑니다.
+        LG CNS 딜을 <b>Mass Migration</b> 실적으로 등록하면 Enterprise KPI 점수를 획득할 수 있어요.</p>
+        <div class="actions">
+          <button class="btn btn-primary btn-sm">Mass Migration 등록</button>
+          <button class="btn btn-ghost btn-sm">상세 분석</button>
         </div>
       </div>
 
-      <div class="grid-4 fade-in">
-        <!-- KPI Ring 1 -->
+      <div class="grid-4 stagger">
         <div class="card" style="text-align:center">
-          <div class="kpi-ring">
-            <svg width="120" height="120" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10"/>
-              <circle cx="60" cy="60" r="50" fill="none" stroke="url(#g1)" stroke-width="10" stroke-dasharray="314" stroke-dashoffset="94" stroke-linecap="round"/>
-              <defs><linearGradient id="g1"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#3b82f6"/></linearGradient></defs>
-            </svg>
-            <div class="kpi-ring-label">
-              <div class="kpi-ring-value">70%</div>
-              <div class="kpi-ring-text">달성률</div>
-            </div>
-          </div>
-          <div style="font-size:12px;font-weight:700">Performance</div>
-          <div style="font-size:11px;color:var(--text-secondary)">25% 비중</div>
+          <div class="kpi-ring"><svg width="110" height="110" viewBox="0 0 110 110"><circle cx="55" cy="55" r="45" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="8"/><circle cx="55" cy="55" r="45" fill="none" stroke="url(#kg1)" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="85" stroke-linecap="round"/><defs><linearGradient id="kg1"><stop offset="0%" stop-color="#8b5cf6"/><stop offset="100%" stop-color="#3b82f6"/></linearGradient></defs></svg><div class="kpi-ring-label"><div class="kpi-ring-value">70%</div><div class="kpi-ring-text">달성률</div></div></div>
+          <div style="font-size:12px;font-weight:700">Performance</div><div style="font-size:10px;color:var(--text-muted)">25% weight</div>
         </div>
-
-        <!-- KPI Ring 2 -->
         <div class="card" style="text-align:center">
-          <div class="kpi-ring">
-            <svg width="120" height="120" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10"/>
-              <circle cx="60" cy="60" r="50" fill="none" stroke="url(#g2)" stroke-width="10" stroke-dasharray="314" stroke-dashoffset="63" stroke-linecap="round"/>
-              <defs><linearGradient id="g2"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#10b981"/></linearGradient></defs>
-            </svg>
-            <div class="kpi-ring-label">
-              <div class="kpi-ring-value">80%</div>
-              <div class="kpi-ring-text">달성률</div>
-            </div>
-          </div>
-          <div style="font-size:12px;font-weight:700">Sales Discipline</div>
-          <div style="font-size:11px;color:var(--text-secondary)">25% 비중</div>
+          <div class="kpi-ring"><svg width="110" height="110" viewBox="0 0 110 110"><circle cx="55" cy="55" r="45" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="8"/><circle cx="55" cy="55" r="45" fill="none" stroke="url(#kg2)" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="57" stroke-linecap="round"/><defs><linearGradient id="kg2"><stop offset="0%" stop-color="#3b82f6"/><stop offset="100%" stop-color="#10b981"/></linearGradient></defs></svg><div class="kpi-ring-label"><div class="kpi-ring-value">80%</div><div class="kpi-ring-text">달성률</div></div></div>
+          <div style="font-size:12px;font-weight:700">Sales Discipline</div><div style="font-size:10px;color:var(--text-muted)">25% weight</div>
         </div>
-
-        <!-- KPI Ring 3 -->
         <div class="card" style="text-align:center">
-          <div class="kpi-ring">
-            <svg width="120" height="120" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10"/>
-              <circle cx="60" cy="60" r="50" fill="none" stroke="url(#g3)" stroke-width="10" stroke-dasharray="314" stroke-dashoffset="157" stroke-linecap="round"/>
-              <defs><linearGradient id="g3"><stop offset="0%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#ef4444"/></linearGradient></defs>
-            </svg>
-            <div class="kpi-ring-label">
-              <div class="kpi-ring-value">50%</div>
-              <div class="kpi-ring-text">달성률</div>
-            </div>
-          </div>
-          <div style="font-size:12px;font-weight:700">Enterprise KPIs</div>
-          <div style="font-size:11px;color:var(--text-secondary)">25% 비중</div>
+          <div class="kpi-ring"><svg width="110" height="110" viewBox="0 0 110 110"><circle cx="55" cy="55" r="45" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="8"/><circle cx="55" cy="55" r="45" fill="none" stroke="url(#kg3)" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="141" stroke-linecap="round"/><defs><linearGradient id="kg3"><stop offset="0%" stop-color="#f59e0b"/><stop offset="100%" stop-color="#ef4444"/></linearGradient></defs></svg><div class="kpi-ring-label"><div class="kpi-ring-value">50%</div><div class="kpi-ring-text">달성률</div></div></div>
+          <div style="font-size:12px;font-weight:700">Enterprise KPIs</div><div style="font-size:10px;color:var(--text-muted)">25% weight</div>
         </div>
-
-        <!-- KPI Ring 4 -->
         <div class="card" style="text-align:center">
-          <div class="kpi-ring">
-            <svg width="120" height="120" viewBox="0 0 120 120">
-              <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="10"/>
-              <circle cx="60" cy="60" r="50" fill="none" stroke="url(#g4)" stroke-width="10" stroke-dasharray="314" stroke-dashoffset="75" stroke-linecap="round"/>
-              <defs><linearGradient id="g4"><stop offset="0%" stop-color="#ec4899"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient></defs>
-            </svg>
-            <div class="kpi-ring-label">
-              <div class="kpi-ring-value">76%</div>
-              <div class="kpi-ring-text">달성률</div>
-            </div>
-          </div>
-          <div style="font-size:12px;font-weight:700">Segment KPIs</div>
-          <div style="font-size:11px;color:var(--text-secondary)">25% 비중</div>
+          <div class="kpi-ring"><svg width="110" height="110" viewBox="0 0 110 110"><circle cx="55" cy="55" r="45" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="8"/><circle cx="55" cy="55" r="45" fill="none" stroke="url(#kg4)" stroke-width="8" stroke-dasharray="283" stroke-dashoffset="68" stroke-linecap="round"/><defs><linearGradient id="kg4"><stop offset="0%" stop-color="#ec4899"/><stop offset="100%" stop-color="#8b5cf6"/></linearGradient></defs></svg><div class="kpi-ring-label"><div class="kpi-ring-value">76%</div><div class="kpi-ring-text">달성률</div></div></div>
+          <div style="font-size:12px;font-weight:700">Segment KPIs</div><div style="font-size:10px;color:var(--text-muted)">25% weight</div>
         </div>
       </div>
 
-      <div class="card fade-in">
-        <div class="section-header">
-          <span class="section-title">퀘스트 보드</span>
-          <span style="font-size:12px;color:var(--text-secondary)">완료 7/12</span>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
-          <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:12px">
-            <div style="font-size:20px;margin-bottom:4px">✅</div>
-            <div style="font-size:12px;font-weight:600">ORCAS 완료</div>
-            <div style="font-size:10px;color:var(--accent-green)">+10pts</div>
-          </div>
-          <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:12px">
-            <div style="font-size:20px;margin-bottom:4px">✅</div>
-            <div style="font-size:12px;font-weight:600">EBC 1건 등록</div>
-            <div style="font-size:10px;color:var(--accent-green)">+15pts</div>
-          </div>
-          <div style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:12px;cursor:pointer">
-            <div style="font-size:20px;margin-bottom:4px">🎯</div>
-            <div style="font-size:12px;font-weight:600">Mass Migration 등록</div>
-            <div style="font-size:10px;color:var(--accent-orange)">+20pts · 진행중</div>
-          </div>
-          <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px;opacity:0.6">
-            <div style="font-size:20px;margin-bottom:4px">🔒</div>
-            <div style="font-size:12px;font-weight:600">Innovation Workshop</div>
-            <div style="font-size:10px;color:var(--text-secondary)">+15pts · 미시작</div>
-          </div>
-          <div style="background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:10px;padding:12px;opacity:0.6">
-            <div style="font-size:20px;margin-bottom:4px">🔒</div>
-            <div style="font-size:12px;font-weight:600">ProServe 런칭</div>
-            <div style="font-size:10px;color:var(--text-secondary)">+20pts · 미시작</div>
-          </div>
-          <div style="background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);border-radius:10px;padding:12px">
-            <div style="font-size:20px;margin-bottom:4px">✅</div>
-            <div style="font-size:12px;font-weight:600">Hygiene 90%+</div>
-            <div style="font-size:10px;color:var(--accent-green)">+10pts</div>
-          </div>
+      <div class="card">
+        <div class="section-header"><span class="section-title">퀘스트 보드</span><span style="font-size:12px;color:var(--text-muted);font-weight:600">7 / 12 완료</span></div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+          <div class="quest done"><div class="icon" style="color:var(--accent-green)">✓</div><div class="name">ORCAS 완료</div><div class="pts">+10 pts</div></div>
+          <div class="quest done"><div class="icon" style="color:var(--accent-green)">✓</div><div class="name">EBC 1건 등록</div><div class="pts">+15 pts</div></div>
+          <div class="quest active"><div class="icon" style="color:var(--accent-orange)">→</div><div class="name">Mass Migration 등록</div><div class="pts">+20 pts · 진행중</div></div>
+          <div class="quest locked"><div class="icon" style="color:var(--text-muted)">—</div><div class="name">Innovation Workshop</div><div class="pts">+15 pts</div></div>
+          <div class="quest locked"><div class="icon" style="color:var(--text-muted)">—</div><div class="name">ProServe 런칭</div><div class="pts">+20 pts</div></div>
+          <div class="quest done"><div class="icon" style="color:var(--accent-green)">✓</div><div class="name">Hygiene 90%+</div><div class="pts">+10 pts</div></div>
         </div>
       </div>
     </div>
 
-    <!-- ============ MEDDPICC PAGE ============ -->
-    <div id="page-meddpicc" style="display:none">
-      <div class="ai-chat fade-in">
-        <p>🧩 <b>Samsung SDS - Cloud Migration Phase 2</b>의 MEDDPICC 분석입니다.
-        이메일과 미팅 노트를 분석한 결과, <b>Economic Buyer(E)</b>와 <b>Paper Process(P)</b>가 아직 미확인 상태입니다.
-        최근 메일에서 <b>김상무</b>님이 예산 관련 의사결정에 자주 언급되는데, Economic Buyer로 등록해볼까요?</p>
-        <div class="ai-actions">
-          <button class="btn btn-primary btn-sm">✅ 김상무님을 E로 등록</button>
-          <button class="btn btn-ghost btn-sm">📧 관련 이메일 보기</button>
+    <!-- ============ MEDDPICC CANVAS ============ -->
+    <div id="page-meddpicc" class="page">
+      <div class="ai-bubble">
+        <p><b>Samsung SDS - Cloud Migration Phase 2</b>의 MEDDPICC 분석입니다. 이메일과 미팅 노트 분석 결과 <b>Economic Buyer(E)</b>와 <b>Paper Process(P)</b>가 미확인입니다. 최근 메일에서 <b>김상무</b>님이 예산 의사결정에 자주 언급되는데, Economic Buyer로 등록해볼까요?</p>
+        <div class="actions">
+          <button class="btn btn-primary btn-sm">김상무님을 E로 등록</button>
+          <button class="btn btn-ghost btn-sm">관련 이메일 보기</button>
         </div>
       </div>
 
-      <div class="card fade-in" style="margin-bottom:16px">
-        <div class="section-header">
-          <span class="section-title">MEDDPICC Canvas — Samsung SDS</span>
-          <span class="status-badge info">5/8 완료</span>
-        </div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="section-header"><span class="section-title">MEDDPICC Canvas — Samsung SDS</span><span class="badge info">5/8 완료</span></div>
         <div class="meddpicc-grid">
-          <div class="meddpicc-cell filled">
-            <div class="letter">M</div>
-            <div class="label">Metrics</div>
-            <div style="font-size:10px;margin-top:4px">30% 비용절감 목표</div>
-          </div>
-          <div class="meddpicc-cell empty" style="cursor:pointer">
-            <div class="letter">E</div>
-            <div class="label">Econ. Buyer</div>
-            <div style="font-size:10px;margin-top:4px;color:var(--accent-orange)">💡 김상무 추천</div>
-          </div>
-          <div class="meddpicc-cell filled">
-            <div class="letter">D</div>
-            <div class="label">Decision Criteria</div>
-            <div style="font-size:10px;margin-top:4px">보안 + 성능</div>
-          </div>
-          <div class="meddpicc-cell filled">
-            <div class="letter">D</div>
-            <div class="label">Decision Process</div>
-            <div style="font-size:10px;margin-top:4px">IT위원회 → CTO승인</div>
-          </div>
-          <div class="meddpicc-cell empty">
-            <div class="letter">P</div>
-            <div class="label">Paper Process</div>
-            <div style="font-size:10px;margin-top:4px">미확인</div>
-          </div>
-          <div class="meddpicc-cell filled">
-            <div class="letter">I</div>
-            <div class="label">Identify Pain</div>
-            <div style="font-size:10px;margin-top:4px">레거시 유지비 증가</div>
-          </div>
-          <div class="meddpicc-cell filled">
-            <div class="letter">C</div>
-            <div class="label">Champion</div>
-            <div style="font-size:10px;margin-top:4px">박팀장 (Cloud팀)</div>
-          </div>
-          <div class="meddpicc-cell empty" style="border-color:var(--accent-orange)">
-            <div class="letter" style="color:var(--accent-orange)">C</div>
-            <div class="label">Competition</div>
-            <div style="font-size:10px;margin-top:4px;color:var(--accent-orange)">Azure 검토 중?</div>
-          </div>
+          <div class="meddpicc-cell filled"><div class="letter">M</div><div class="label">Metrics</div><div class="detail">30% 비용절감 목표</div></div>
+          <div class="meddpicc-cell warn"><div class="letter">E</div><div class="label">Econ. Buyer</div><div class="detail" style="color:var(--accent-orange)">김상무 추천</div></div>
+          <div class="meddpicc-cell filled"><div class="letter">D</div><div class="label">Decision Criteria</div><div class="detail">보안 + 성능</div></div>
+          <div class="meddpicc-cell filled"><div class="letter">D</div><div class="label">Decision Process</div><div class="detail">IT위원회 → CTO승인</div></div>
+          <div class="meddpicc-cell empty"><div class="letter">P</div><div class="label">Paper Process</div><div class="detail">미확인</div></div>
+          <div class="meddpicc-cell filled"><div class="letter">I</div><div class="label">Identify Pain</div><div class="detail">레거시 유지비 증가</div></div>
+          <div class="meddpicc-cell filled"><div class="letter">C</div><div class="label">Champion</div><div class="detail">박팀장 (Cloud팀)</div></div>
+          <div class="meddpicc-cell warn"><div class="letter">C</div><div class="label">Competition</div><div class="detail" style="color:var(--accent-orange)">Azure 검토 중?</div></div>
         </div>
       </div>
 
-      <div class="card fade-in">
-        <div class="section-header">
-          <span class="section-title">AI 전략 제안</span>
-        </div>
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px">
-          <div style="background:rgba(139,92,246,0.08);border-radius:10px;padding:14px">
-            <div style="font-size:12px;font-weight:700;color:var(--accent-purple);margin-bottom:6px">🎯 다음 액션</div>
-            <div style="font-size:13px">김상무님과 1:1 미팅 요청 → Economic Buyer 확정 및 예산 타임라인 확인</div>
-            <button class="btn btn-primary btn-sm" style="margin-top:8px">📧 미팅 요청 이메일 초안</button>
+      <div class="card">
+        <div class="section-header"><span class="section-title">AI 전략 제안</span></div>
+        <div class="grid-2" style="margin-bottom:0">
+          <div style="background:rgba(139,92,246,0.06);border-radius:var(--radius-md);padding:16px">
+            <div style="font-size:12px;font-weight:700;color:var(--accent-purple);margin-bottom:8px">다음 액션</div>
+            <div style="font-size:13px;line-height:1.6">김상무님과 1:1 미팅 요청 → Economic Buyer 확정 및 예산 타임라인 확인</div>
+            <button class="btn btn-primary btn-sm" style="margin-top:10px">미팅 요청 이메일 초안</button>
           </div>
-          <div style="background:rgba(239,68,68,0.08);border-radius:10px;padding:14px">
-            <div style="font-size:12px;font-weight:700;color:var(--accent-red);margin-bottom:6px">⚠️ 리스크</div>
-            <div style="font-size:13px">Azure 경쟁 정보 부족 — 박팀장을 통해 경쟁사 PoC 진행 여부 파악 필요</div>
-            <button class="btn btn-ghost btn-sm" style="margin-top:8px">📋 경쟁 분석 요청</button>
+          <div style="background:rgba(239,68,68,0.06);border-radius:var(--radius-md);padding:16px">
+            <div style="font-size:12px;font-weight:700;color:var(--accent-red);margin-bottom:8px">⚠ 리스크</div>
+            <div style="font-size:13px;line-height:1.6">Azure 경쟁 정보 부족 — 박팀장을 통해 경쟁사 PoC 진행 여부 파악 필요</div>
+            <button class="btn btn-ghost btn-sm" style="margin-top:10px">경쟁 분석 요청</button>
           </div>
         </div>
       </div>
@@ -1147,32 +1042,57 @@
 </div>
 
 <script>
-  function showPage(page) {
-    // Hide all pages
-    document.querySelectorAll('[id^="page-"]').forEach(el => el.style.display = 'none');
-    // Show selected
-    document.getElementById('page-' + page).style.display = 'block';
-    // Update nav
+  const titles = {
+    dashboard: ['Dashboard', '안녕하세요 재호님, 오늘의 파이프라인 현황입니다'],
+    meeting: ['Meeting Prep', 'AI 기반 미팅 브리핑 자동 생성'],
+    pipeline: ['Pipeline Hygiene', '선제적 파이프라인 위생 관리 & 자동 수정'],
+    fcst: ['Smart FCST', 'AI 기반 포캐스트 분석 & 자동 제출'],
+    kpi: ['KPI Manager', 'FY26 고과 게이미피케이션 대시보드'],
+    meddpicc: ['MEDDPICC Canvas', 'AI 기반 딜 전략 워크스페이스'],
+  };
+
+  function navigate(page) {
+    document.querySelectorAll('.page').forEach(el => el.classList.remove('visible'));
+    document.getElementById('page-' + page).classList.add('visible');
+
     document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-    event.currentTarget.classList.add('active');
-    // Update title
-    const titles = {
-      dashboard: ['Dashboard', '안녕하세요 재호님, 오늘의 파이프라인 현황입니다'],
-      meeting: ['Meeting Prep', 'AI 기반 미팅 브리핑 자동 생성'],
-      pipeline: ['Pipeline Hygiene', '선제적 파이프라인 위생 관리 & 자동 수정'],
-      fcst: ['Smart FCST', 'AI 기반 포캐스트 분석 & 자동 제출'],
-      kpi: ['KPI Manager', 'FY26 고과 게이미피케이션 대시보드'],
-      meddpicc: ['MEDDPICC Canvas', 'AI 기반 딜 전략 워크스페이스'],
-    };
-    document.getElementById('page-title').textContent = titles[page][0];
-    document.getElementById('page-subtitle').textContent = titles[page][1];
-    // Re-trigger animations
-    document.querySelectorAll('#page-' + page + ' .fade-in').forEach(el => {
+    const navItem = document.querySelector(`.nav-item[data-page="${page}"]`);
+    if (navItem) navItem.classList.add('active');
+
+    const [title, subtitle] = titles[page] || ['', ''];
+    document.getElementById('page-title').textContent = title;
+    document.getElementById('page-subtitle').textContent = subtitle;
+
+    // Re-trigger stagger animations
+    document.querySelectorAll('#page-' + page + ' .stagger > *').forEach(el => {
       el.style.animation = 'none';
       el.offsetHeight;
       el.style.animation = '';
     });
   }
+
+  // Bind nav clicks
+  document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+    item.addEventListener('click', () => navigate(item.dataset.page));
+  });
+
+  // Tab switching (visual only)
+  document.querySelectorAll('.tabs').forEach(tabGroup => {
+    tabGroup.querySelectorAll('.tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabGroup.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+      });
+    });
+  });
+
+  // Keyboard shortcut
+  document.addEventListener('keydown', e => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      document.querySelector('.search-global input').focus();
+    }
+  });
 </script>
 
 </body>
