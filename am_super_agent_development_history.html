@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AM Super-Agent — Development History</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-2: #334155;
+      --border: #475569;
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --accent: #f97316;
+      --accent-2: #fb923c;
+      --blue: #38bdf8;
+      --green: #4ade80;
+      --yellow: #facc15;
+      --red: #f87171;
+      --purple: #a78bfa;
+      --cyan: #22d3ee;
+      --pink: #f472b6;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.7; overflow-x: hidden;
+    }
+
+    /* Hero */
+    .hero { position: relative; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 2rem; }
+    .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 50% 40%, rgba(249,115,22,0.12) 0%, transparent 60%), radial-gradient(ellipse 60% 50% at 80% 20%, rgba(56,189,248,0.08) 0%, transparent 50%); pointer-events: none; }
+    .hero-badge { display: inline-block; padding: 0.35rem 1rem; border: 1px solid var(--accent); border-radius: 999px; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 1.5rem; }
+    .hero h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 800; line-height: 1.1; background: linear-gradient(135deg, var(--text) 0%, var(--accent) 50%, var(--blue) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 1rem; }
+    .hero-sub { font-size: 1.15rem; color: var(--text-dim); max-width: 650px; margin-bottom: 2.5rem; }
+    .hero-stats { display: flex; gap: 3rem; flex-wrap: wrap; justify-content: center; }
+    .hero-stat-value { font-size: 2.5rem; font-weight: 800; color: var(--accent); }
+    .hero-stat-label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.05em; }
+    .scroll-hint { position: absolute; bottom: 2rem; animation: bounce 2s infinite; color: var(--text-dim); font-size: 0.85rem; }
+    @keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(8px)} }
+
+    /* Layout */
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+    section { padding: 5rem 0; }
+    section + section { border-top: 1px solid var(--surface-2); }
+    h2 { font-size: 2rem; font-weight: 700; margin-bottom: 0.5rem; }
+    h2 .num { color: var(--accent); margin-right: 0.5rem; }
+    .section-desc { color: var(--text-dim); margin-bottom: 2.5rem; font-size: 1rem; }
+    h3 { font-size: 1.3rem; font-weight: 600; margin: 2.5rem 0 1rem; color: var(--blue); }
+    h4 { font-size: 1.05rem; font-weight: 600; margin: 1.5rem 0 0.75rem; color: var(--text); }
+    .card { background: var(--surface); border: 1px solid var(--surface-2); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem; }
+    .highlight-box { background: rgba(249,115,22,0.08); border: 1px solid rgba(249,115,22,0.25); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; }
+
+    /* Tables */
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; font-size: 0.88rem; }
+    th { text-align: left; padding: 0.7rem 1rem; background: var(--surface-2); color: var(--accent-2); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+    th:first-child { border-radius: 8px 0 0 0; } th:last-child { border-radius: 0 8px 0 0; }
+    td { padding: 0.6rem 1rem; border-bottom: 1px solid var(--surface-2); vertical-align: top; }
+    tr:hover td { background: rgba(249,115,22,0.04); }
+    .score-badge { display: inline-block; padding: 0.15rem 0.6rem; border-radius: 999px; font-weight: 700; font-size: 0.8rem; }
+    .pass { background: rgba(74,222,128,0.15); color: var(--green); }
+    .tag { display: inline-block; padding: 0.2rem 0.55rem; font-size: 0.7rem; border-radius: 4px; background: var(--surface-2); color: var(--text-dim); font-weight: 600; margin: 0.1rem; }
+    .tag-orange { background: rgba(249,115,22,0.15); color: var(--accent-2); }
+    .tag-blue { background: rgba(56,189,248,0.15); color: var(--blue); }
+    .tag-green { background: rgba(74,222,128,0.15); color: var(--green); }
+    .tag-purple { background: rgba(167,139,250,0.15); color: var(--purple); }
+    .tag-yellow { background: rgba(250,204,21,0.15); color: var(--yellow); }
+    .tag-pink { background: rgba(244,114,182,0.15); color: var(--pink); }
+    .tag-cyan { background: rgba(34,211,238,0.15); color: var(--cyan); }
+
+    /* 3-Terminal */
+    .terminals { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 2rem 0; }
+    @media (max-width: 800px) { .terminals { grid-template-columns: 1fr; } }
+    .terminal { border-radius: 12px; overflow: hidden; border: 1px solid var(--surface-2); }
+    .terminal-bar { padding: 0.5rem 1rem; font-size: 0.75rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
+    .terminal-bar .dots { display: flex; gap: 5px; }
+    .terminal-bar .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .terminal-body { padding: 1rem 1.25rem; background: var(--bg); font-size: 0.82rem; min-height: 200px; }
+    .terminal-body code { color: var(--green); }
+    .terminal-body .dim { color: var(--text-dim); }
+    .terminal-body .cmd { color: var(--accent); }
+    .terminal-body .output { color: var(--text-dim); font-size: 0.78rem; }
+    .t1 .terminal-bar { background: rgba(56,189,248,0.2); color: var(--blue); }
+    .t2 .terminal-bar { background: rgba(249,115,22,0.2); color: var(--accent); }
+    .t3 .terminal-bar { background: rgba(74,222,128,0.2); color: var(--green); }
+
+    /* File tree */
+    .file-tree { background: var(--surface); border: 1px solid var(--surface-2); border-radius: 12px; padding: 1.5rem 2rem; font-size: 0.84rem; font-family: 'Cascadia Code', 'Fira Code', monospace; line-height: 1.9; margin: 1rem 0 1.5rem; overflow-x: auto; }
+    .file-tree .folder { color: var(--blue); font-weight: 700; }
+    .file-tree .file { color: var(--text-dim); }
+    .file-tree .desc { color: var(--accent-2); font-family: 'Inter', sans-serif; font-size: 0.78rem; }
+    .file-tree .badge { display: inline-block; padding: 0.1rem 0.4rem; border-radius: 3px; font-size: 0.65rem; font-weight: 700; font-family: 'Inter', sans-serif; margin-left: 0.5rem; }
+    .b-prd { background: rgba(56,189,248,0.15); color: var(--blue); }
+    .b-uf { background: rgba(167,139,250,0.15); color: var(--purple); }
+    .b-dm { background: rgba(250,204,21,0.15); color: var(--yellow); }
+    .b-arch { background: rgba(74,222,128,0.15); color: var(--green); }
+    .b-api { background: rgba(249,115,22,0.15); color: var(--accent-2); }
+    .b-adr { background: rgba(244,114,182,0.15); color: var(--pink); }
+
+    /* Sprint bars */
+    .sprint-bars { display: flex; align-items: flex-end; gap: 0.75rem; height: 200px; padding: 1rem 0; margin: 1.5rem 0; }
+    .sprint-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 0.4rem; height: 100%; justify-content: flex-end; }
+    .sprint-bar { width: 100%; max-width: 80px; border-radius: 6px 6px 0 0; }
+    .sprint-bar-label { font-size: 0.68rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.04em; }
+    .sprint-bar-score { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+
+    /* Methodology flow */
+    .method-flow { display: flex; align-items: center; justify-content: center; gap: 0.5rem; flex-wrap: wrap; margin: 2rem 0; }
+    .method-node { padding: 1rem 1.5rem; border-radius: 12px; font-weight: 700; text-align: center; min-width: 140px; }
+    .method-planner { background: rgba(56,189,248,0.15); color: var(--blue); border: 2px solid rgba(56,189,248,0.4); }
+    .method-generator { background: rgba(249,115,22,0.15); color: var(--accent); border: 2px solid rgba(249,115,22,0.4); }
+    .method-evaluator { background: rgba(74,222,128,0.15); color: var(--green); border: 2px solid rgba(74,222,128,0.4); }
+    .method-arrow { font-size: 1.5rem; color: var(--text-dim); }
+
+    /* Features Grid */
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+    .feature-card { background: var(--surface); border: 1px solid var(--surface-2); border-radius: 12px; padding: 1.5rem; transition: transform 0.2s, border-color 0.2s; }
+    .feature-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+    .feature-num { font-size: 0.7rem; text-transform: uppercase; color: var(--accent); letter-spacing: 0.1em; font-weight: 700; }
+    .feature-title { font-size: 1.1rem; font-weight: 700; margin: 0.25rem 0 0.7rem; }
+    .feature-list { list-style: none; padding: 0; }
+    .feature-list li { padding: 0.25rem 0 0.25rem 1.2rem; position: relative; font-size: 0.85rem; color: var(--text-dim); }
+    .feature-list li::before { content: ''; position: absolute; left: 0; top: 0.6rem; width: 6px; height: 6px; border-radius: 50%; background: var(--accent); }
+
+    /* Metrics */
+    .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 0.75rem; margin: 1.5rem 0; }
+    .metric-card { background: var(--surface); border: 1px solid var(--surface-2); border-radius: 10px; padding: 1rem; text-align: center; }
+    .metric-value { font-size: 1.8rem; font-weight: 800; background: linear-gradient(135deg, var(--accent), var(--yellow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .metric-label { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.2rem; }
+
+    /* Lessons */
+    .lesson-card { background: var(--surface); border-left: 3px solid var(--accent); border-radius: 0 10px 10px 0; padding: 1.25rem 1.5rem; margin-bottom: 0.75rem; }
+    .lesson-num { font-size: 0.7rem; color: var(--accent); text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; }
+    .lesson-title { font-weight: 700; font-size: 0.95rem; margin: 0.2rem 0 0.4rem; }
+    .lesson-body { font-size: 0.85rem; color: var(--text-dim); }
+
+    /* Appendix */
+    .appendix { background: var(--surface); border-radius: 12px; padding: 1.5rem 2rem; margin: 1rem 0; font-size: 0.85rem; }
+    .appendix summary { cursor: pointer; font-weight: 700; color: var(--blue); font-size: 0.95rem; padding: 0.5rem 0; }
+    .appendix[open] summary { margin-bottom: 1rem; }
+
+    footer { text-align: center; padding: 3rem 2rem; color: var(--text-dim); font-size: 0.85rem; border-top: 1px solid var(--surface-2); }
+
+    @media (max-width: 640px) {
+      .hero-stats { gap: 1.5rem; }
+      .sprint-bars { height: 160px; gap: 0.3rem; }
+      section { padding: 3rem 0; }
+    }
+
+    /* Overview grid */
+    .overview-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 0.75rem; margin-bottom: 2rem; }
+    .overview-item { background: var(--surface); border: 1px solid var(--surface-2); border-radius: 10px; padding: 1rem 1.25rem; display: flex; align-items: flex-start; gap: 0.75rem; }
+    .overview-icon { font-size: 1.3rem; flex-shrink: 0; width: 2.2rem; height: 2.2rem; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: rgba(249,115,22,0.1); }
+    .overview-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); }
+    .overview-value { font-weight: 600; font-size: 0.9rem; }
+
+    /* Cycle steps */
+    .cycle-steps { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0.6rem; margin: 1rem 0; }
+    .cycle-step { background: var(--surface); border: 1px solid var(--surface-2); border-radius: 8px; padding: 0.6rem 0.8rem; display: flex; align-items: center; gap: 0.6rem; font-size: 0.82rem; }
+    .cycle-num { width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--bg); font-weight: 800; font-size: 0.72rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  </style>
+</head>
+<body>
+
+<!-- ==================== HERO ==================== -->
+<section class="hero">
+  <div class="hero-badge" style="font-size:1rem; padding:0.5rem 1.5rem;">AWS CIND Hackathon 2026 &middot; Team 6</div>
+  <p style="color:var(--text-dim); font-size:1.1rem; margin-bottom:1.5rem; letter-spacing:0.05em;">Jaeho Lee &middot; Wonjun Kim &middot; Albert Pkart &middot; Yoonha Kim</p>
+  <h1>AM Super-Agent</h1>
+  <p class="hero-sub">AI-Powered Sales Automation Platform<br><strong style="color:var(--accent);">문과생도 AI-DLC 방법론을 익히면 이틀 만에 Production 앱을 배포할 수 있습니다.</strong></p>
+  <div class="hero-stats">
+    <div class="hero-stat"><div class="hero-stat-value">3</div><div class="hero-stat-label">Terminals</div></div>
+    <div class="hero-stat"><div class="hero-stat-value">7</div><div class="hero-stat-label">Sprints</div></div>
+    <div class="hero-stat"><div class="hero-stat-value">3.96</div><div class="hero-stat-label">Avg Score</div></div>
+    <div class="hero-stat"><div class="hero-stat-value">22</div><div class="hero-stat-label">ADRs</div></div>
+  </div>
+  <div class="scroll-hint">Scroll to explore the journey</div>
+</section>
+
+<!-- ==================== 01. FEATURES ==================== -->
+<section>
+  <div class="container">
+    <h2><span class="num">01</span> Features Delivered</h2>
+    <p style="text-align:center; color:var(--blue); font-size:1.1rem; font-weight:700; margin-bottom:1.5rem;">Frontend: React SPA (Vite + shadcn/ui)</p>
+
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-num">Tab 1</div>
+        <div class="feature-title">Pipeline View</div>
+        <ul class="feature-list">
+          <li>SFDC 실시간 파이프라인 (Stage별 그룹핑)</li>
+          <li>4규칙 Hygiene 스캔 + AI 수정 제안</li>
+          <li>Smart Oppty 생성 (이메일 시그널 기반)</li>
+          <li>Stage 변경 자동 감지 + 활동 로깅</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-num">Tab 2</div>
+        <div class="feature-title">Hygiene Manager</div>
+        <ul class="feature-list">
+          <li>배치 수정 SSE 스트리밍</li>
+          <li>AI 추론 근거 표시 카드</li>
+          <li>Slack 알림 + Optimistic Locking</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-num">Tab 3</div>
+        <div class="feature-title">Smart FCST</div>
+        <ul class="feature-list">
+          <li>QSR 스크린샷 &rarr; Bedrock Vision OCR</li>
+          <li>Account별 AI FCST 추천</li>
+          <li>Territory Quota 대비 실적 추적</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-num">Tab 4</div>
+        <div class="feature-title">MEDDPICC Canvas</div>
+        <ul class="feature-list">
+          <li>7항목 분석 + Confidence 스코어링</li>
+          <li>비동기 2-Stage (SFDC 즉시 &rarr; AI SSE)</li>
+          <li>EB/Champion 자동 생성 + Socratic RAG</li>
+        </ul>
+      </div>
+      <div class="feature-card">
+        <div class="feature-num">Tab 5</div>
+        <div class="feature-title">KPI Dashboard</div>
+        <ul class="feature-list">
+          <li>4축 레이더 차트 (Recharts)</li>
+          <li>4주 추이 LineChart + 점수 카드</li>
+          <li>무한 스크롤 활동 타임라인</li>
+        </ul>
+      </div>
+    </div>
+
+    <div style="text-align:center; color:var(--text-dim); font-size:1.8rem; letter-spacing:0.3rem; margin:1rem 0;">&darr; &uarr;</div>
+
+    <!-- API Layer -->
+    <div style="text-align:center; margin:1rem 0;">
+      <div style="display:inline-block; padding:0.8rem 3rem; border-radius:10px; background:rgba(249,115,22,0.15); color:var(--accent-2); border:1px solid rgba(249,115,22,0.3); font-weight:700; font-size:1rem;">
+        Express API + SSE Streaming
+      </div>
+    </div>
+
+    <div style="text-align:center; color:var(--text-dim); font-size:1.8rem; letter-spacing:0.3rem; margin:1rem 0;">&darr; &uarr;</div>
+
+    <!-- MCP + AI Layer -->
+    <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:1rem; margin:1.5rem 0;">
+      <div style="padding:1.2rem 1rem; border-radius:10px; background:rgba(167,139,250,0.15); color:var(--purple); border:1px solid rgba(167,139,250,0.3); font-size:1rem; font-weight:700; text-align:center;">
+        aws-sentral-mcp<br><span style="font-weight:400; font-size:0.85rem; color:var(--text-dim);">Salesforce CRUD<br>Opportunity &middot; Account &middot; Contact</span>
+      </div>
+      <div style="padding:1.2rem 1rem; border-radius:10px; background:rgba(244,114,182,0.15); color:var(--pink); border:1px solid rgba(244,114,182,0.3); font-size:1rem; font-weight:700; text-align:center;">
+        outlook-semantic-mcp<br><span style="font-weight:400; font-size:0.85rem; color:var(--text-dim);">자체 개발 MCP<br>LanceDB 시맨틱 검색 (998 emails)</span>
+      </div>
+      <div style="padding:1.2rem 1rem; border-radius:10px; background:rgba(34,211,238,0.15); color:var(--cyan); border:1px solid rgba(34,211,238,0.3); font-size:1rem; font-weight:700; text-align:center;">
+        slack-mcp<br><span style="font-weight:400; font-size:0.85rem; color:var(--text-dim);">채널 알림 발송<br>#jaeho-super-agent</span>
+      </div>
+      <div style="padding:1.2rem 1rem; border-radius:10px; background:rgba(74,222,128,0.15); color:var(--green); border:1px solid rgba(74,222,128,0.3); font-size:1rem; font-weight:700; text-align:center;">
+        Amazon Bedrock<br><span style="font-weight:400; font-size:0.85rem; color:var(--text-dim);">Claude 4.5 Sonnet<br>MEDDPICC &middot; FCST &middot; OCR</span>
+      </div>
+    </div>
+
+    <p style="text-align:center; color:var(--blue); font-size:1.1rem; font-weight:700; margin-top:1rem;">Backend: MCP Server Integration</p>
+  </div>
+</section>
+
+<!-- ==================== 02. AI-DLC: PLANNER ARTIFACTS ==================== -->
+<section>
+  <div class="container">
+    <h2><span class="num">02</span> AI-DLC: Planner Document Artifacts</h2>
+    <p class="section-desc">
+      <strong style="color:var(--accent); font-size:1.1rem;">바이브 코딩에서 가장 중요한 것은 프롬프트(설계 문서) 작성입니다.</strong><br><br>
+      이 프로젝트에서 전체 2일 중 <strong>8시간 이상</strong>을 PRD부터 API Design까지의 설계 문서 작성에 투자했습니다.
+      AI에게 "이거 만들어줘"라고 한 줄 던지는 것이 아니라, <strong>PRD → Userflow → Data Model → Architecture → API Design → ADR</strong>의
+      AI 개발 라이프사이클(AI-DLC)을 따라 <strong>16개 문서(~430KB)</strong>와 <strong>22개 ADR</strong>을 작성했습니다.
+      이 문서들이 곧 Generator에게 전달되는 <strong>프롬프트</strong>이며, 코딩 중 설계 판단이 불필요하도록 모든 결정을 사전에 완료했습니다.
+    </p>
+
+    <div class="highlight-box" style="border-color: rgba(249,115,22,0.5); background: rgba(249,115,22,0.12);">
+      <h4 style="margin-top:0; color:var(--accent); font-size:1.05rem;">Why Prompt Engineering is Everything</h4>
+      <p style="font-size:0.9rem; color:var(--text-dim);">
+        바이브 코딩의 성패는 AI에게 <em>무엇을 어떻게 만들어야 하는지</em>를 얼마나 정밀하게 전달하느냐에 달려 있습니다.
+        <code>runs/planner/</code> 폴더에 있는 16개 문서는 단순한 기획서가 아니라,
+        <strong style="color:var(--text);">AI가 읽고 실행할 수 있도록 설계된 구조화된 프롬프트</strong>입니다.
+        테이블 DDL, TypeScript 인터페이스, MCP 도구 매핑, SSE 시퀀스 다이어그램까지 —
+        Generator가 "어떻게 할까?"라고 고민할 여지를 <strong style="color:var(--text);">제로</strong>로 만드는 것이 목표였습니다.<br><br>
+        결과: <strong style="color:var(--green);">7개 스프린트 전원 2~3회 시도 내 PASS, 평균 34분/Sprint</strong>.
+        설계 문서에 투자한 시간이 구현의 속도와 품질을 결정했습니다.
+      </p>
+    </div>
+
+    <!-- AI-DLC Flow -->
+    <h3>AI-DLC Document Pipeline</h3>
+    <p style="color:var(--text-dim); font-size:0.88rem; margin-bottom:1rem;">각 단계는 이전 단계의 산출물을 입력으로 받습니다. 6라운드의 크로스 검증으로 문서 간 정합성을 보장했습니다.</p>
+
+    <div style="display:flex; align-items:center; justify-content:center; gap:0.5rem; flex-wrap:wrap; margin:1.5rem 0 2rem; padding:1.5rem; background:var(--surface); border:1px solid var(--surface-2); border-radius:16px;">
+      <div style="flex:1; min-width:100px; text-align:center; padding:0.8rem 0.5rem; border-radius:10px; background:rgba(56,189,248,0.15); border:1px solid rgba(56,189,248,0.3); color:var(--blue); font-weight:700; font-size:0.95rem;">PRD<br><span style="font-size:0.75rem; font-weight:400;">&times;1</span></div>
+      <span style="color:var(--text-dim); font-size:1.5rem; flex-shrink:0;">&rarr;</span>
+      <div style="flex:1; min-width:100px; text-align:center; padding:0.8rem 0.5rem; border-radius:10px; background:rgba(167,139,250,0.15); border:1px solid rgba(167,139,250,0.3); color:var(--purple); font-weight:700; font-size:0.95rem;">Userflow<br><span style="font-size:0.75rem; font-weight:400;">&times;4</span></div>
+      <span style="color:var(--text-dim); font-size:1.5rem; flex-shrink:0;">&rarr;</span>
+      <div style="flex:1; min-width:100px; text-align:center; padding:0.8rem 0.5rem; border-radius:10px; background:rgba(250,204,21,0.15); border:1px solid rgba(250,204,21,0.3); color:var(--yellow); font-weight:700; font-size:0.95rem;">Data Model<br><span style="font-size:0.75rem; font-weight:400;">&times;3</span></div>
+      <span style="color:var(--text-dim); font-size:1.5rem; flex-shrink:0;">&rarr;</span>
+      <div style="flex:1; min-width:100px; text-align:center; padding:0.8rem 0.5rem; border-radius:10px; background:rgba(74,222,128,0.15); border:1px solid rgba(74,222,128,0.3); color:var(--green); font-weight:700; font-size:0.95rem;">Architecture<br><span style="font-size:0.75rem; font-weight:400;">&times;3</span></div>
+      <span style="color:var(--text-dim); font-size:1.5rem; flex-shrink:0;">&rarr;</span>
+      <div style="flex:1; min-width:100px; text-align:center; padding:0.8rem 0.5rem; border-radius:10px; background:rgba(249,115,22,0.15); border:1px solid rgba(249,115,22,0.3); color:var(--accent-2); font-weight:700; font-size:0.95rem;">API Design<br><span style="font-size:0.75rem; font-weight:400;">&times;3</span></div>
+      <span style="color:var(--text-dim); font-size:1.5rem; flex-shrink:0;">&rarr;</span>
+      <div style="flex:1; min-width:100px; text-align:center; padding:0.8rem 0.5rem; border-radius:10px; background:rgba(244,114,182,0.15); border:1px solid rgba(244,114,182,0.3); color:var(--pink); font-weight:700; font-size:0.95rem;">ADR<br><span style="font-size:0.75rem; font-weight:400;">&times;22</span></div>
+    </div>
+
+    <div class="highlight-box">
+      <h4 style="margin-top:0; color:var(--yellow);">Cross-Document Validation: 6 Rounds, 100+ Issues</h4>
+      <p style="font-size:0.88rem; color:var(--text-dim);">
+        16개 문서가 서로 참조하기 때문에, 한 문서를 수정하면 다른 문서와 불일치가 발생합니다.
+        이를 해결하기 위해 <strong style="color:var(--text);">6라운드의 체계적 크로스 검증</strong>을 수행하여
+        필드명 drift(camelCase vs snake_case), 삭제된 기능의 잔여 참조, 테이블 구조 불일치 등
+        <strong style="color:var(--text);">100건 이상의 불일치를 사전에 제거</strong>했습니다.
+        이 3시간의 검증이 없었다면 구현 중 디버깅으로 훨씬 더 많은 시간을 소모했을 것입니다.
+      </p>
+    </div>
+
+    <!-- Total size -->
+    <h3>Document Scale</h3>
+    <div class="metrics-row">
+      <div class="metric-card"><div class="metric-value">16</div><div class="metric-label">Planner 문서</div></div>
+      <div class="metric-card"><div class="metric-value">22</div><div class="metric-label">ADR 기록</div></div>
+      <div class="metric-card"><div class="metric-value">~430KB</div><div class="metric-label">총 문서 크기</div></div>
+      <div class="metric-card"><div class="metric-value">6</div><div class="metric-label">검증 라운드</div></div>
+      <div class="metric-card"><div class="metric-value">100+</div><div class="metric-label">수정된 불일치</div></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ==================== 02. 3-TERMINAL ARCHITECTURE ==================== -->
+<section>
+  <div class="container">
+    <h2><span class="num">03</span> Three-Terminal Architecture</h2>
+    <p class="section-desc">
+      이 프로젝트의 또 다른 핵심은 <strong>3개의 독립된 Claude Code 터미널</strong>을 동시에 운영한 것입니다.<br>
+      Anthropic Harness 논문(Prithvi Rajasekaran)의 GAN 영감 — <strong>생성자가 자기 코드를 평가하면 관대해지는 편향</strong>을 제거하기 위해,
+      프롬프트를 작성하는 에이전트, 코드를 작성하는 에이전트, 평가하는 에이전트를 <strong>물리적으로 다른 터미널에서 분리</strong>했습니다.
+    </p>
+
+    <div class="terminals">
+      <!-- Terminal 1 -->
+      <div class="terminal t1">
+        <div class="terminal-bar"><div class="dots"><div class="dot" style="background:var(--red)"></div><div class="dot" style="background:var(--yellow)"></div><div class="dot" style="background:var(--green)"></div></div>Terminal 1 — Planner (Prompt)</div>
+        <div class="terminal-body">
+          <div class="dim"># 역할: 설계 문서 작성 + Sprint Contract 생성</div>
+          <div class="dim"># 도구: Claude Code (claude)</div><br>
+          <div><span class="cmd">$</span> <code>claude</code></div>
+          <div class="output">&gt; PRD 작성, Userflow 설계, Data Model 정의</div>
+          <div class="output">&gt; Architecture 설계, API Design</div>
+          <div class="output">&gt; 6라운드 크로스 검증 (100+ 불일치 수정)</div>
+          <div class="output">&gt; Sprint Contract 7개 + Prompt 7개 생성</div><br>
+          <div class="dim"># 산출물: runs/planner/ (16개 문서, ~430KB)</div>
+          <div class="dim"># 산출물: runs/sprint-contracts/ (7+7개)</div>
+
+        </div>
+      </div>
+
+      <!-- Terminal 2 -->
+      <div class="terminal t2">
+        <div class="terminal-bar"><div class="dots"><div class="dot" style="background:var(--red)"></div><div class="dot" style="background:var(--yellow)"></div><div class="dot" style="background:var(--green)"></div></div>Terminal 2 — Generator (Code)</div>
+        <div class="terminal-body">
+          <div class="dim"># 역할: Sprint Contract 읽고 코드 구현</div>
+          <div class="dim"># 도구: Claude Code (claude)</div><br>
+          <div><span class="cmd">$</span> <code>claude</code></div>
+          <div class="output">&gt; sprint-contract.md를 읽는다</div>
+          <div class="output">&gt; Backend (Express) + Frontend (React) 구현</div>
+          <div class="output">&gt; TypeScript 빌드 확인</div>
+          <div class="output">&gt; git commit</div><br>
+          <div class="dim"># Contract만 읽음 — 설계 결정 없음</div>
+          <div class="dim"># Sprint당 평균 34분</div>
+        </div>
+      </div>
+
+      <!-- Terminal 3 -->
+      <div class="terminal t3">
+        <div class="terminal-bar"><div class="dots"><div class="dot" style="background:var(--red)"></div><div class="dot" style="background:var(--yellow)"></div><div class="dot" style="background:var(--green)"></div></div>Terminal 3 — Evaluator (Score)</div>
+        <div class="terminal-body">
+          <div class="dim"># 역할: Sprint Contract 기준으로 독립 채점</div>
+          <div class="dim"># 도구: agentinc evaluator agent</div><br>
+          <div><span class="cmd">$</span> <code>claude</code></div>
+          <div class="output">&gt; Generator 코드를 모름 — Contract만 기준</div>
+          <div class="output">&gt; Major/Minor 이슈 발견 → evaluations/ 기록</div>
+          <div class="output">&gt; PASS → handoff 생성</div>
+          <div class="output">&gt; FAIL → Generator에게 수정 요청</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Flow + Why -->
+    <p style="text-align:center; font-size:0.88rem; color:var(--text-dim); margin:1.5rem 0 0.5rem;">
+      <strong style="color:var(--blue);">Terminal 1</strong> <span style="font-size:0.75rem;">sprint-contracts/*.md</span>
+      &nbsp;&rarr;&nbsp;
+      <strong style="color:var(--accent);">Terminal 2</strong> <span style="font-size:0.75rem;">src/**/*.ts(x)</span>
+      &nbsp;&rarr;&nbsp;
+      <strong style="color:var(--green);">Terminal 3</strong> <span style="font-size:0.75rem;">evaluations/*.md</span>
+      &nbsp;&nbsp;|&nbsp;&nbsp;
+      <span style="font-size:0.82rem;">FAIL &rarr; 수정 후 재채점 &nbsp;|&nbsp; PASS &rarr; <code>handoffs/*.md</code> &rarr; 다음 Sprint</span>
+    </p>
+
+    <div class="highlight-box">
+      <h4 style="margin-top:0; color:var(--accent);">Why Three Terminals?</h4>
+      <p style="font-size:0.9rem; color:var(--text-dim);">
+        <strong style="color:var(--text);">자기 평가 편향 제거</strong>: Generator가 스스로 "잘 했다"고 판단하는 것을 원천 차단. Evaluator는 Generator의 코드 작성 과정을 전혀 모르고, Contract 기준으로만 채점합니다.<br><br>
+        <strong style="color:var(--text);">컨텍스트 분리</strong>: 각 터미널은 독립된 컨텍스트 윈도우를 사용. Planner의 설계 맥락이 Generator의 구현을 오염시키지 않고, Evaluator는 편견 없이 순수하게 결과물만 봅니다.<br><br>
+        <strong style="color:var(--text);">파일 기반 소통</strong>: 에이전트 간 직접 대화 없음. 오직 <code>sprint-contracts/</code>, <code>evaluations/</code>, <code>handoffs/</code> 파일을 통해서만 소통합니다.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 03. SPRINT DESIGN ==================== -->
+<section>
+  <div class="container">
+    <h2><span class="num">04</span> Sprint Design</h2>
+    <p class="section-desc">
+      7개 스프린트는 Phase 순서와 의존성을 고려하여 설계되었습니다.
+      각 Sprint에는 <strong>Contract</strong>(완료 조건)와 <strong>Prompt</strong>(Generator에게 전달할 지시)가 쌍으로 작성되었습니다.
+    </p>
+
+    <table>
+      <tr><th>Sprint</th><th>Phase</th><th>Scope</th><th>Description</th></tr>
+      <tr>
+        <td><strong>Sprint 1</strong></td>
+        <td><span class="tag tag-blue">Infra</span></td>
+        <td>프로젝트 기반</td>
+        <td>React+Vite+Express+SQLite+MCP 초기화, 9개 테이블 DDL, MCP 클라이언트</td>
+      </tr>
+      <tr>
+        <td><strong>Sprint 2</strong></td>
+        <td><span class="tag tag-blue">Phase 1</span></td>
+        <td>Pipeline 기본</td>
+        <td>SFDC 파이프라인 뷰 + 4규칙 Hygiene 스캔 + 캐시 계층</td>
+      </tr>
+      <tr>
+        <td><strong>Sprint 3</strong></td>
+        <td><span class="tag tag-blue">Phase 1</span></td>
+        <td>Hygiene AI</td>
+        <td>AI 수정 제안 + 배치 SSE + Smart Oppty 생성 + Slack 알림</td>
+      </tr>
+      <tr>
+        <td><strong>Sprint 4</strong></td>
+        <td><span class="tag tag-blue">Phase 1</span></td>
+        <td>Smart FCST</td>
+        <td>QSR Vision OCR + AI FCST 추천 + Territory Quota + 16개 테스트</td>
+      </tr>
+      <tr>
+        <td><strong>Sprint 5</strong></td>
+        <td><span class="tag tag-purple">Phase 3</span></td>
+        <td>MEDDPICC</td>
+        <td>7항목 Canvas + SSE 분석 + SFDC 저장 + Socratic RAG 채팅</td>
+      </tr>
+      <tr>
+        <td><strong>Sprint 6</strong></td>
+        <td><span class="tag tag-green">Phase 2</span></td>
+        <td>KPI Dashboard</td>
+        <td>4축 레이더 차트 + 추이 그래프 + 활동 타임라인 + 점수 카드</td>
+      </tr>
+      <tr>
+        <td><strong>Sprint 7</strong></td>
+        <td><span class="tag" style="background:rgba(34,211,238,0.15);color:var(--cyan);">통합</span></td>
+        <td>Integration</td>
+        <td>이메일 온보딩 SSE + 추천 엔진 + 전체 탭 Skeleton/Toast 폴리싱</td>
+      </tr>
+    </table>
+
+    <h3>Sprint Contract &harr; Prompt Pair</h3>
+    <p style="color:var(--text-dim); font-size:0.88rem; margin-bottom:1rem;">
+      각 Sprint마다 두 개의 파일이 쌍으로 생성됩니다. Contract는 "무엇을 만들어야 하는가"를,
+      Prompt는 "Generator에게 어떻게 지시할 것인가"를 정의합니다.
+    </p>
+    <div class="file-tree" style="font-size:0.8rem; line-height:1.7;">
+<span class="folder">runs/sprint-contracts/</span><br>
+├── <span class="file">sprint-1.md ~ sprint-7.md</span> <span class="desc">— 완료 조건 + 채점 기준 (Evaluator가 읽음)</span><br>
+└── <span class="folder">prompts/</span><br>
+&nbsp;&nbsp;&nbsp; └── <span class="file">sprint-1-prompt.md ~ sprint-7-prompt.md</span> <span class="desc">— Generator 지시 프롬프트</span><br>
+<br>
+<span class="folder">runs/evaluations/</span><br>
+└── <span class="file">sprint-1.md ~ sprint-7.md</span> <span class="desc">— Evaluator 채점 결과 (Major/Minor 이슈)</span><br>
+<br>
+<span class="folder">runs/handoffs/</span><br>
+└── <span class="file">sprint-1.md ~ sprint-7.md</span> <span class="desc">— PASS 시 다음 Sprint 인계 문서</span>
+    </div>
+
+    <!-- Sprint Cycle -->
+    <h3>Sprint Execution Cycle</h3>
+    <div class="cycle-steps">
+      <div class="cycle-step"><div class="cycle-num">1</div>Contract + Prompt 읽기</div>
+      <div class="cycle-step"><div class="cycle-num">2</div>Backend 구현 (Express)</div>
+      <div class="cycle-step"><div class="cycle-num">3</div>Frontend 구현 (React)</div>
+      <div class="cycle-step"><div class="cycle-num">4</div>Vite 빌드 + TS 검증</div>
+      <div class="cycle-step"><div class="cycle-num">5</div>git commit</div>
+      <div class="cycle-step"><div class="cycle-num">6</div>Evaluator 채점 (Terminal 3)</div>
+      <div class="cycle-step"><div class="cycle-num">7</div>피드백 반영 수정</div>
+      <div class="cycle-step"><div class="cycle-num">8</div>재채점 &rarr; PASS</div>
+      <div class="cycle-step"><div class="cycle-num">9</div>Handoff + ADR 작성</div>
+      <div class="cycle-step"><div class="cycle-num">10</div>다음 Sprint Contract</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 04. SPRINT RESULTS ==================== -->
+<section>
+  <div class="container">
+    <h2><span class="num">05</span> Sprint Results</h2>
+    <p class="section-desc">7개 스프린트를 4시간 만에 실행. 평균 34분/Sprint. 전원 2~3회 시도 내 PASS.</p>
+
+    <!-- Sprint Score Bar Chart -->
+    <div class="sprint-bars">
+      <div class="sprint-bar-col">
+        <div class="sprint-bar-score">3.7</div>
+        <div class="sprint-bar" style="height:68%; background: linear-gradient(180deg, var(--accent), var(--accent-2));"></div>
+        <div class="sprint-bar-label">S1</div>
+      </div>
+      <div class="sprint-bar-col">
+        <div class="sprint-bar-score">3.8</div>
+        <div class="sprint-bar" style="height:72%; background: linear-gradient(180deg, var(--accent), var(--accent-2));"></div>
+        <div class="sprint-bar-label">S2</div>
+      </div>
+      <div class="sprint-bar-col">
+        <div class="sprint-bar-score">4.1</div>
+        <div class="sprint-bar" style="height:82%; background: linear-gradient(180deg, var(--green), #22c55e);"></div>
+        <div class="sprint-bar-label">S3</div>
+      </div>
+      <div class="sprint-bar-col">
+        <div class="sprint-bar-score">4.1</div>
+        <div class="sprint-bar" style="height:82%; background: linear-gradient(180deg, var(--green), #22c55e);"></div>
+        <div class="sprint-bar-label">S4</div>
+      </div>
+      <div class="sprint-bar-col">
+        <div class="sprint-bar-score">4.0</div>
+        <div class="sprint-bar" style="height:78%; background: linear-gradient(180deg, var(--green), #22c55e);"></div>
+        <div class="sprint-bar-label">S5</div>
+      </div>
+      <div class="sprint-bar-col">
+        <div class="sprint-bar-score">3.9</div>
+        <div class="sprint-bar" style="height:74%; background: linear-gradient(180deg, var(--accent), var(--accent-2));"></div>
+        <div class="sprint-bar-label">S6</div>
+      </div>
+      <div class="sprint-bar-col">
+        <div class="sprint-bar-score">4.1</div>
+        <div class="sprint-bar" style="height:82%; background: linear-gradient(180deg, var(--green), #22c55e);"></div>
+        <div class="sprint-bar-label">S7</div>
+      </div>
+    </div>
+
+    <table>
+      <tr><th>Sprint</th><th>Time</th><th>Score</th><th>Content</th></tr>
+      <tr><td><strong>Sprint 1</strong></td><td>16:06~16:30</td><td><span class="score-badge pass">3.7 PASS</span></td><td>React+Vite+Express+SQLite+MCP 인프라 초기화</td></tr>
+      <tr><td><strong>Sprint 2</strong></td><td>16:32~16:57</td><td><span class="score-badge pass">3.8 PASS</span></td><td>Pipeline 뷰 + 4규칙 Hygiene 스캔</td></tr>
+      <tr><td><strong>Sprint 3</strong></td><td>16:58~17:42</td><td><span class="score-badge pass">4.1 PASS</span></td><td>AI Hygiene 수정 + 배치 SSE + Smart Oppty</td></tr>
+      <tr><td><strong>Sprint 4</strong></td><td>17:44~18:30</td><td><span class="score-badge pass">4.1 PASS</span></td><td>QSR OCR + AI FCST 추천 + Territory Quota</td></tr>
+      <tr><td><strong>Sprint 5</strong></td><td>18:37~19:16</td><td><span class="score-badge pass">4.0 PASS</span></td><td>MEDDPICC Canvas + Socratic RAG 채팅</td></tr>
+      <tr><td><strong>Sprint 6</strong></td><td>19:17~19:44</td><td><span class="score-badge pass">3.9 PASS</span></td><td>KPI 레이더 차트 + 활동 타임라인</td></tr>
+      <tr><td><strong>Sprint 7</strong></td><td>19:26~20:00</td><td><span class="score-badge pass">4.1 PASS</span></td><td>온보딩 SSE + 추천 엔진 + UI 폴리싱</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- ==================== 06. LESSONS ==================== -->
+<section>
+  <div class="container">
+    <h2><span class="num">06</span> Lessons Learned</h2>
+    <div class="lesson-card">
+      <div class="lesson-num">Lesson 1</div>
+      <div class="lesson-title">PRD is a Journey, Not a Document</div>
+      <div class="lesson-body">조원들과 PRD를 논의하며 Pain Point를 수집하는 과정은 AM으로서의 일상을 되돌아보는 즐거운 시간이었습니다. "이게 불편했지", "이건 왜 항상 수작업이지?" — 매일 겪던 문제를 언어화하는 것 자체가 솔루션의 시작이었습니다.</div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num">Lesson 2</div>
+      <div class="lesson-title">Plan Exhaustively, Execute Mechanically</div>
+      <div class="lesson-body">8시간의 설계가 4시간의 거의 완벽한 구현을 가능하게 했습니다. Generator는 설계 판단 없이 Contract만 실행했습니다.</div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num">Lesson 3</div>
+      <div class="lesson-title">Separate Generator and Evaluator Physically</div>
+      <div class="lesson-body">모든 Sprint에서 최소 1건의 Major 이슈가 발견되었습니다. 같은 에이전트가 평가했다면 놓쳤을 것입니다. 3개 터미널 분리가 핵심이었습니다.</div>
+    </div>
+    <div class="lesson-card">
+      <div class="lesson-num">Lesson 4</div>
+      <div class="lesson-title">Cross-Document Validation is Non-Negotiable</div>
+      <div class="lesson-body">12개 문서에서 100건 이상의 불일치. 검증 없이 바로 코딩했다면 디버깅에 훨씬 더 많은 시간이 소요되었을 것입니다.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== APPENDIX ==================== -->
+<section>
+  <div class="container">
+    <h2><span class="num">A</span> Appendix</h2>
+    <p class="section-desc">상세 기술 정보와 부가 데이터.</p>
+
+    <!-- A0: Planner Document Artifacts -->
+    <div class="appendix">
+      <h3 style="color:var(--blue); margin-top:0;">A.0 Planner Document Artifacts</h3>
+      <div class="file-tree">
+<span class="folder">runs/planner/</span><br>
+│<br>
+├── <span class="folder">prd/</span> <span class="badge b-prd">STEP 1 — PRD</span><br>
+│&nbsp;&nbsp; └── <span class="file">overview.md</span> <span class="desc">— 제품 비전, 페르소나, MoSCoW 요구사항, SFDC 필드 매핑, MEDDPICC 프롬프트 (49KB)</span><br>
+│<br>
+├── <span class="folder">userflows/</span> <span class="badge b-uf">STEP 2 — Userflow</span><br>
+│&nbsp;&nbsp; ├── <span class="file">pipeline-hygiene.md</span> <span class="desc">— Pipeline 뷰 + 4규칙 Hygiene 스캔 + Smart Oppty (45KB)</span><br>
+│&nbsp;&nbsp; ├── <span class="file">smart-fcst.md</span> <span class="desc">— QSR OCR + AI FCST 추천 + FLM 리포트 (42KB)</span><br>
+│&nbsp;&nbsp; ├── <span class="file">meddpicc.md</span> <span class="desc">— MEDDPICC Canvas 비동기 2-Stage + Socratic RAG (43KB)</span><br>
+│&nbsp;&nbsp; └── <span class="file">onboarding-indexing.md</span> <span class="desc">— 이메일 인덱싱 + 증분 업데이트 (16KB)</span><br>
+│<br>
+├── <span class="folder">data-model/</span> <span class="badge b-dm">STEP 3 — Data Model</span><br>
+│&nbsp;&nbsp; ├── <span class="file">entities.md</span> <span class="desc">— 9개 SQLite 테이블 DDL + TypeScript 인터페이스 (33KB)</span><br>
+│&nbsp;&nbsp; ├── <span class="file">relationships.md</span> <span class="desc">— ER 관계도 + 데이터 흐름 다이어그램 (43KB)</span><br>
+│&nbsp;&nbsp; └── <span class="file">cache-strategy.md</span> <span class="desc">— Freshness Check 패턴 + TTL 전략 (37KB)</span><br>
+│<br>
+├── <span class="folder">architecture/</span> <span class="badge b-arch">STEP 4 — Architecture</span><br>
+│&nbsp;&nbsp; ├── <span class="file">system-overview.md</span> <span class="desc">— 3-Tier 구조 + 비동기 렌더링 + 인증 (44KB)</span><br>
+│&nbsp;&nbsp; ├── <span class="file">mcp-orchestration.md</span> <span class="desc">— MCP 동시성 모델 + 순차/병렬 전략 (40KB)</span><br>
+│&nbsp;&nbsp; └── <span class="file">data-flow.md</span> <span class="desc">— 화면별 시퀀스 다이어그램 + MCP 매트릭스 (46KB)</span><br>
+│<br>
+├── <span class="folder">api-design/</span> <span class="badge b-api">STEP 5 — API Design</span><br>
+│&nbsp;&nbsp; ├── <span class="file">endpoints.md</span> <span class="desc">— REST + SSE 엔드포인트 상세 스펙 (27KB)</span><br>
+│&nbsp;&nbsp; ├── <span class="file">mcp-tool-mapping.md</span> <span class="desc">— 엔드포인트별 MCP 도구 매핑 테이블 (19KB)</span><br>
+│&nbsp;&nbsp; └── <span class="file">response-schemas.md</span> <span class="desc">— TypeScript 응답 인터페이스 정의 (15KB)</span><br>
+│<br>
+└── <span class="folder">tech-decisions/</span> <span class="badge b-adr">STEP 6 — ADR: Architecture Decision Record (22개)</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-sqljs-over-better-sqlite3.md</span> <span class="desc">— WASM SQLite 선택 근거</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-mcp-client-pattern.md</span> <span class="desc">— MCP 클라이언트 초기화 패턴</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-vite-proxy.md</span> <span class="desc">— Vite 개발 프록시 설정</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-lru-cache.md</span> <span class="desc">— LRU 메모리 캐시 전략</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-hygiene-server-side.md</span> <span class="desc">— Hygiene 스캔 서버사이드 실행</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-oppty-field-mapping.md</span> <span class="desc">— SFDC Opportunity 필드 매핑</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-bedrock-inference-profile.md</span> <span class="desc">— Bedrock 추론 프로파일 선택</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-sse-batch-pattern.md</span> <span class="desc">— SSE 배치 처리 패턴</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-cross-mcp-parallel.md</span> <span class="desc">— 크로스 MCP 서버 병렬 호출</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-qsr-ocr-bedrock-vision.md</span> <span class="desc">— QSR 스크린샷 OCR 전략</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-account-matching-strategy.md</span> <span class="desc">— 이메일-Account 매칭 전략</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-fcst-inference-pipeline.md</span> <span class="desc">— FCST AI 추론 파이프라인</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-email-multi-query.md</span> <span class="desc">— 이메일 다중 쿼리 전략</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-meddpicc-cache-ttl.md</span> <span class="desc">— MEDDPICC 캐시 30분 TTL</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-socratic-rag-context.md</span> <span class="desc">— Socratic RAG 컨텍스트 설계</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-eb-contact-auto-create.md</span> <span class="desc">— EB Contact 자동 생성</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-recharts-selection.md</span> <span class="desc">— 차트 라이브러리 선택</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-kpi-realtime-aggregation.md</span> <span class="desc">— KPI 실시간 집계 전략</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-stage-change-detection.md</span> <span class="desc">— Stage 변경 감지 방식</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-email-indexing-strategy.md</span> <span class="desc">— 이메일 인덱싱 전략</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">adr-recommendation-cache-ttl.md</span> <span class="desc">— 추천 캐시 TTL 전략</span><br>
+&nbsp;&nbsp;&nbsp; └── <span class="file">adr-slack-channel-hardcode.md</span> <span class="desc">— Slack 채널 하드코딩 결정</span><br>
+      </div>
+    </div>
+
+    <!-- A0.5: Source Files -->
+    <div class="appendix">
+      <h3 style="color:var(--blue); margin-top:0;">A.0.5 Source Files (48 files)</h3>
+      <div class="file-tree">
+<span class="folder">src/</span><br>
+├── <span class="file">server.ts</span> <span class="desc">— Express 서버 진입점 + MCP 초기화</span><br>
+│<br>
+├── <span class="folder">client/</span><br>
+│&nbsp;&nbsp; ├── <span class="file">main.tsx</span> <span class="desc">— React 앱 진입점</span><br>
+│&nbsp;&nbsp; ├── <span class="file">App.tsx</span> <span class="desc">— 5-탭 라우팅 + 레이아웃</span><br>
+│&nbsp;&nbsp; ├── <span class="folder">components/</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">PipelineTab.tsx</span> <span class="desc">— Pipeline 뷰 (Stage 그룹핑)</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">StageGroup.tsx</span> <span class="desc">— Stage별 Oppty 그룹</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">OpptyCard.tsx</span> <span class="desc">— Opportunity 카드 컴포넌트</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">SmartOpptySection.tsx</span> <span class="desc">— Smart Oppty 생성 섹션</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">HygieneTab.tsx</span> <span class="desc">— Hygiene 스캔 + 배치 수정</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">SuggestionCard.tsx</span> <span class="desc">— AI 수정 제안 카드</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">RecommendationSection.tsx</span> <span class="desc">— AI 추천 섹션</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">FcstTab.tsx</span> <span class="desc">— FCST 메인 탭</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">FcstAccountTable.tsx</span> <span class="desc">— Account별 FCST 테이블</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">FcstSummaryCards.tsx</span> <span class="desc">— FCST 요약 카드</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">QsrUploader.tsx</span> <span class="desc">— QSR 스크린샷 업로드 (Bedrock Vision OCR)</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">MeddpiccTab.tsx</span> <span class="desc">— MEDDPICC 메인 탭</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">MeddpiccCanvas.tsx</span> <span class="desc">— 7항목 Canvas + Confidence 스코어</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">SocraticChat.tsx</span> <span class="desc">— Socratic RAG 채팅 UI</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">KpiTab.tsx</span> <span class="desc">— KPI 레이더 차트 + 추이 그래프</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; └── <span class="folder">ui/</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── <span class="file">Skeleton.tsx</span> <span class="desc">— 로딩 스켈레톤</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── <span class="file">EmptyState.tsx</span> <span class="desc">— 빈 상태 표시</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── <span class="file">Toast.tsx</span> <span class="desc">— 토스트 알림</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── <span class="file">ErrorBoundary.tsx</span> <span class="desc">— 에러 바운더리</span><br>
+│&nbsp;&nbsp; ├── <span class="folder">hooks/</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">usePipeline.ts</span> <span class="desc">— Pipeline 데이터 페칭</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">useBatchFix.ts</span> <span class="desc">— 배치 수정 SSE 핸들링</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; ├── <span class="file">useFcst.ts</span> <span class="desc">— FCST 데이터 + QSR OCR</span><br>
+│&nbsp;&nbsp; │&nbsp;&nbsp; └── <span class="file">useMeddpicc.ts</span> <span class="desc">— MEDDPICC 분석 + SSE</span><br>
+│&nbsp;&nbsp; └── <span class="folder">utils/</span><br>
+│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── <span class="file">format.ts</span> <span class="desc">— 날짜/금액 포맷 유틸</span><br>
+│<br>
+├── <span class="folder">routes/</span> <span class="desc">— Express API 라우트</span><br>
+│&nbsp;&nbsp; ├── <span class="file">pipeline.ts</span> <span class="desc">— /api/pipeline/* 엔드포인트</span><br>
+│&nbsp;&nbsp; ├── <span class="file">hygiene.ts</span> <span class="desc">— /api/hygiene/* 엔드포인트</span><br>
+│&nbsp;&nbsp; ├── <span class="file">fcst.ts</span> <span class="desc">— /api/fcst/* 엔드포인트</span><br>
+│&nbsp;&nbsp; ├── <span class="file">meddpicc.ts</span> <span class="desc">— /api/meddpicc/* 엔드포인트</span><br>
+│&nbsp;&nbsp; ├── <span class="file">kpi.test.ts</span> <span class="desc">— KPI 테스트</span><br>
+│&nbsp;&nbsp; ├── <span class="file">onboarding.ts</span> <span class="desc">— /api/onboarding/* 이메일 인덱싱</span><br>
+│&nbsp;&nbsp; ├── <span class="file">pipeline.test.ts</span> <span class="desc">— Pipeline 테스트</span><br>
+│&nbsp;&nbsp; ├── <span class="file">hygiene.test.ts</span> <span class="desc">— Hygiene 테스트</span><br>
+│&nbsp;&nbsp; └── <span class="file">fcst.test.ts</span> <span class="desc">— FCST 테스트 (16건)</span><br>
+│<br>
+├── <span class="folder">services/</span> <span class="desc">— 비즈니스 로직</span><br>
+│&nbsp;&nbsp; ├── <span class="file">mcp-client.ts</span> <span class="desc">— MCP 서버 연결 + 도구 호출</span><br>
+│&nbsp;&nbsp; ├── <span class="file">bedrock-client.ts</span> <span class="desc">— Amazon Bedrock 추론 클라이언트</span><br>
+│&nbsp;&nbsp; ├── <span class="file">cache.ts</span> <span class="desc">— LRU 메모리 캐시 + Freshness Check</span><br>
+│&nbsp;&nbsp; ├── <span class="file">hygiene.ts</span> <span class="desc">— 4규칙 Hygiene 스캔 엔진</span><br>
+│&nbsp;&nbsp; └── <span class="file">hygiene.test.ts</span> <span class="desc">— Hygiene 서비스 테스트</span><br>
+│<br>
+├── <span class="folder">db/</span><br>
+│&nbsp;&nbsp; ├── <span class="file">init.ts</span> <span class="desc">— SQLite (sql.js WASM) 초기화 + 9 테이블 DDL</span><br>
+│&nbsp;&nbsp; └── <span class="file">init.test.ts</span> <span class="desc">— DB 초기화 테스트</span><br>
+│<br>
+├── <span class="folder">shared/</span><br>
+│&nbsp;&nbsp; └── <span class="file">types.ts</span> <span class="desc">— 공유 TypeScript 인터페이스</span><br>
+│<br>
+├── <span class="folder">types/</span><br>
+│&nbsp;&nbsp; └── <span class="file">sql.js.d.ts</span> <span class="desc">— sql.js 타입 선언</span><br>
+│<br>
+└── <span class="folder">utils/</span><br>
+&nbsp;&nbsp;&nbsp; ├── <span class="file">rate-limit.ts</span> <span class="desc">— API 레이트 리미터</span><br>
+&nbsp;&nbsp;&nbsp; └── <span class="file">shared.ts</span> <span class="desc">— 공통 유틸리티</span>
+      </div>
+    </div>
+
+    <!-- A1: Architecture -->
+    <div class="appendix">
+      <h3 style="color:var(--blue); margin-top:0;">A.1 System Architecture</h3>
+      <div style="text-align:center; margin:1rem 0;">
+        <div style="display:flex; align-items:center; justify-content:center; gap:1rem; flex-wrap:wrap;">
+          <div style="padding:0.6rem 1.2rem; border-radius:8px; background:rgba(56,189,248,0.15); color:var(--blue); border:1px solid rgba(56,189,248,0.3); font-weight:600; font-size:0.85rem;">React SPA</div>
+          <span style="color:var(--text-dim); font-size:1.2rem;">&harr;</span>
+          <div style="padding:0.6rem 1.2rem; border-radius:8px; background:rgba(249,115,22,0.15); color:var(--accent-2); border:1px solid rgba(249,115,22,0.3); font-weight:600; font-size:0.85rem;">Express API</div>
+          <span style="color:var(--text-dim); font-size:1.2rem;">&harr;</span>
+          <div style="display:flex; flex-direction:column; gap:0.4rem;">
+            <div style="padding:0.4rem 0.8rem; border-radius:6px; background:rgba(167,139,250,0.15); color:var(--purple); border:1px solid rgba(167,139,250,0.3); font-size:0.78rem; font-weight:600;">aws-sentral-mcp (SFDC)</div>
+            <div style="padding:0.4rem 0.8rem; border-radius:6px; background:rgba(167,139,250,0.15); color:var(--purple); border:1px solid rgba(167,139,250,0.3); font-size:0.78rem; font-weight:600;">outlook-email (Semantic)</div>
+            <div style="padding:0.4rem 0.8rem; border-radius:6px; background:rgba(167,139,250,0.15); color:var(--purple); border:1px solid rgba(167,139,250,0.3); font-size:0.78rem; font-weight:600;">slack-mcp (Notifications)</div>
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:center; gap:1rem; margin-top:1rem;">
+          <div style="padding:0.6rem 1.2rem; border-radius:8px; background:rgba(74,222,128,0.15); color:var(--green); border:1px solid rgba(74,222,128,0.3); font-weight:600; font-size:0.85rem;">Bedrock Claude 4.5 Sonnet</div>
+          <div style="padding:0.6rem 1.2rem; border-radius:8px; background:rgba(250,204,21,0.15); color:var(--yellow); border:1px solid rgba(250,204,21,0.3); font-weight:600; font-size:0.85rem;">SQLite (sql.js WASM) — 9 Tables</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- A2: Tech Stack -->
+    <div class="appendix">
+      <h3 style="color:var(--blue); margin-top:0;">A.2 Tech Stack</h3>
+      <div style="margin:0.5rem 0; display:flex; flex-wrap:wrap; gap:0.35rem;">
+        <span class="tag tag-blue">React 18</span><span class="tag tag-blue">Vite 5</span><span class="tag tag-blue">shadcn/ui</span><span class="tag tag-blue">Tailwind CSS</span>
+        <span class="tag tag-orange">Node.js</span><span class="tag tag-orange">Express</span><span class="tag tag-orange">TypeScript</span>
+        <span class="tag tag-green">Amazon Bedrock</span><span class="tag tag-green">Claude 4.5 Sonnet</span>
+        <span class="tag tag-yellow">SQLite (sql.js WASM)</span><span class="tag tag-purple">MCP Protocol</span><span class="tag tag-purple">Recharts</span>
+      </div>
+    </div>
+
+    <!-- A3: Key Technical Decisions -->
+    <div class="appendix">
+      <h3 style="color:var(--blue); margin-top:0;">A.3 Key Technical Decisions (ADR Summary)</h3>
+      <table>
+        <tr><th>Decision</th><th>Choice</th><th>Reason</th></tr>
+        <tr><td style="color:var(--blue);font-weight:600;">SQLite Engine</td><td style="color:var(--accent-2);font-weight:600;">sql.js (WASM)</td><td>Node v24에서 better-sqlite3 네이티브 빌드 실패</td></tr>
+        <tr><td style="color:var(--blue);font-weight:600;">Chart Library</td><td style="color:var(--accent-2);font-weight:600;">Recharts</td><td>SVG 네이티브, ~45KB, Tailwind 호환</td></tr>
+        <tr><td style="color:var(--blue);font-weight:600;">KPI Aggregation</td><td style="color:var(--accent-2);font-weight:600;">Real-time</td><td>AM 1인 사용, memCache 워밍 ~25ms</td></tr>
+        <tr><td style="color:var(--blue);font-weight:600;">Email Matching</td><td style="color:var(--accent-2);font-weight:600;">Semantic Search</td><td>다중 쿼리(account+oppty+partner), from 필터 불안정</td></tr>
+        <tr><td style="color:var(--blue);font-weight:600;">MEDDPICC Cache</td><td style="color:var(--accent-2);font-weight:600;">30min TTL</td><td>신선도와 API 비용 균형</td></tr>
+        <tr><td style="color:var(--blue);font-weight:600;">Cron Strategy</td><td style="color:var(--accent-2);font-weight:600;">Startup + Freshness</td><td>노트북 환경에서 24시간 Cron 불가</td></tr>
+        <tr><td style="color:var(--blue);font-weight:600;">Stage Detection</td><td style="color:var(--accent-2);font-weight:600;">Pipeline-fetch diff</td><td>해커톤 스코프에서 가장 단순한 접근</td></tr>
+      </table>
+    </div>
+
+    <!-- A4: Evaluator Feedback -->
+    <div class="appendix">
+      <h3 style="color:var(--blue); margin-top:0;">A.4 Evaluator Feedback Patterns</h3>
+      <table>
+        <tr><th>Category</th><th>Count</th><th>Examples</th></tr>
+        <tr><td>Missing DB operations</td><td>3</td><td>stage_change INSERT, Slack 알림, 증분 인덱싱</td></tr>
+        <tr><td>UI/Data mismatch</td><td>2</td><td>eventIcon 매핑, Skeleton 로딩 상태</td></tr>
+        <tr><td>Performance</td><td>2</td><td>loadMore deps 최적화, recommendation freshness</td></tr>
+        <tr><td>Test coverage</td><td>2</td><td>Hygiene 테스트 assertion, FCST 테스트 확장</td></tr>
+      </table>
+    </div>
+
+    <!-- A5: Metrics -->
+    <div class="appendix">
+      <h3 style="color:var(--blue); margin-top:0;">A.5 Key Metrics</h3>
+      <div class="metrics-row">
+        <div class="metric-card"><div class="metric-value">7</div><div class="metric-label">Sprint Contracts</div></div>
+        <div class="metric-card"><div class="metric-value">16</div><div class="metric-label">Planner 문서</div></div>
+        <div class="metric-card"><div class="metric-value">22</div><div class="metric-label">ADR Records</div></div>
+        <div class="metric-card"><div class="metric-value">40+</div><div class="metric-label">Source Files</div></div>
+        <div class="metric-card"><div class="metric-value">15+</div><div class="metric-label">React Components</div></div>
+        <div class="metric-card"><div class="metric-value">5</div><div class="metric-label">API Modules</div></div>
+        <div class="metric-card"><div class="metric-value">20+</div><div class="metric-label">Git Commits</div></div>
+      </div>
+    </div>
+
+    <!-- A6: Cross-Validation Detail -->
+    <div class="appendix">
+      <h3 style="color:var(--blue); margin-top:0;">A.6 Cross-Validation Rounds Detail</h3>
+      <table>
+        <tr><th>Round</th><th>Time</th><th>Issues</th><th>Key Fixes</th></tr>
+        <tr><td>Round 1</td><td>10:54~11:01</td><td>10</td><td>snake_case 통일, activity_log 타입값, competition 필드</td></tr>
+        <tr><td>Round 2</td><td>11:16~12:16</td><td>15</td><td>Batch Hygiene 3자 충돌, 엔드포인트 경로 불일치, SSE 모델 충돌</td></tr>
+        <tr><td>Round 3</td><td>12:53~13:00</td><td>18</td><td>aws-outlook-mcp 제거(12 참조), Cron→Freshness 변환</td></tr>
+        <tr><td>Round 4</td><td>13:13~13:50</td><td>33</td><td>FCST 3-table 분리, Spend→Revenue 용어 통일</td></tr>
+        <tr><td>Round 5</td><td>13:55~14:54</td><td>~20</td><td>MEDDPICC Stage 1 호출 수(4→5), cache_metadata 제거</td></tr>
+        <tr><td>Round 6</td><td>14:59~15:47</td><td>10</td><td>api-design ↔ data-model 크로스체크 (Major 6, Minor 4)</td></tr>
+      </table>
+    </div>
+
+    <!-- A7: Technology Integrations -->
+    <div class="appendix">
+      <h3 style="color:var(--blue); margin-top:0;">A.7 Technology Integrations</h3>
+      <table>
+        <tr><th>Integration</th><th>Method</th><th>Purpose</th></tr>
+        <tr><td>Salesforce (SFDC)</td><td>aws-sentral-mcp</td><td>Opportunity CRUD, Account, Contact, Spend</td></tr>
+        <tr><td>Outlook Email</td><td>outlook-email MCP</td><td>시맨틱 검색 (LanceDB, 998 이메일 인덱싱)</td></tr>
+        <tr><td>Slack</td><td>slack-mcp</td><td>#jaeho-super-agent 채널 알림</td></tr>
+        <tr><td>Amazon Bedrock</td><td>Claude 4.5 Sonnet</td><td>MEDDPICC 분석, FCST 추론, QSR OCR, 추천</td></tr>
+        <tr><td>SQLite</td><td>sql.js (WASM)</td><td>9개 로컬 테이블 (캐싱 + 상태 관리)</td></tr>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== FOOTER ==================== -->
+<footer>
+  <p><strong>AM Super-Agent</strong> &mdash; Built with Claude Opus 4.6 using the Anthropic Harness Methodology</p>
+  <p style="margin-top:0.5rem;">AWS CIND Hackathon &middot; March 2026 &middot; Team 6</p>
+  <p style="margin-top:0.3rem; font-size:0.8rem; color:var(--text-dim);">Jaeho Lee &middot; Wonjun Kim &middot; Albert Pkart &middot; Yoonha Kim</p>
+</footer>
+
+</body>
+</html>
